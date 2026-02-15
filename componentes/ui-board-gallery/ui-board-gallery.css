@@ -1,0 +1,103 @@
+/* ui-board-gallery/ui-board-gallery.css */
+
+#ui-board-gallery-component {
+  /* Fill viewport, but allow page to grow naturally */
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  padding: 20px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  /* IMPORTANT: do not force internal scrolling */
+  overflow: visible;
+}
+
+/* Header stays natural height */
+.ui-board-gallery-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ui-board-gallery-title {
+  margin: 0;
+}
+
+.ui-board-gallery-create-column {
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* Board area grows, but doesn't create vertical scroll by default */
+.ui-board-gallery-columns-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+
+  background-color: #f7f7f7;
+  padding: 20px;
+  border-radius: 10px;
+
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  /* Horizontal scroll only if needed */
+  overflow-x: auto;
+  overflow-y: visible;
+
+  /* Fill ~90% of the viewport height */
+  min-height: 90vh;
+  min-height: 90dvh;
+
+  /* Avoid shrinking columns into nothing */
+  min-width: 0;
+}
+
+/* Shell: move icon + column */
+.ui-board-gallery-column-shell {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+/* Only this icon is draggable */
+.ui-board-gallery-move-icon {
+  cursor: grab;
+  user-select: none;
+  font-size: 18px;
+  color: #888;
+  padding: 6px 4px;
+}
+
+.ui-board-gallery-move-icon:active {
+  cursor: grabbing;
+}
+
+/* Drag state */
+.ui-board-gallery-dragging-shell {
+  opacity: 0.5;
+}
+
+/* Placeholder while dragging columns */
+.ui-board-gallery-placeholder {
+  width: 4px;
+  background-color: #ccc;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+/* Placeholder for card drag (if used in gallery scope) */
+.ui-board-gallery-card-placeholder {
+  height: 2px;
+  background-color: #ccc;
+  border-radius: 2px;
+}

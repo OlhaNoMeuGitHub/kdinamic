@@ -1,0 +1,77 @@
+﻿/* Materials/ui-menu-opcoes-m/ui-menu-opcoes-m.css */
+
+.ui-menu-opcoes-m-root {
+  position: relative;
+  display: inline-block;
+  font-family: Arial, sans-serif;
+}
+
+.ui-menu-opcoes-m-icon {
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #333;
+}
+
+.ui-menu-opcoes-m-icon:focus {
+  outline: 2px solid #bbb;
+  outline-offset: 2px;
+}
+
+.ui-menu-opcoes-m-context {
+  position: fixed;
+  top: 0;
+  left: 0;
+  list-style: none;
+  padding: 10px;
+  margin: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  white-space: nowrap;
+  border-radius: 4px;
+  overflow: visible;
+}
+
+.ui-menu-opcoes-m-hidden {
+  display: none;
+}
+
+.ui-menu-opcoes-m-visible {
+  display: block;
+}
+
+.ui-menu-opcoes-m-item {
+  padding: 10px;
+  cursor: pointer;
+  color: #333;
+  transition: background-color 0.3s;
+  position: relative;
+}
+
+.ui-menu-opcoes-m-item:hover {
+  background-color: #f0f0f0;
+}
+
+.ui-menu-opcoes-m-submenu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  list-style: none;
+  padding: 10px;
+  margin: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10000;
+  white-space: nowrap;
+  display: none;
+}
+
+.ui-menu-opcoes-m-item:hover > .ui-menu-opcoes-m-submenu {
+  display: block;
+}

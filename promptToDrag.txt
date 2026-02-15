@@ -1,0 +1,65 @@
+When I create a card using the handleCreateCardClick, I want that the card be dragleable. For this 
+I want use a shell element strategy
+We can drag the element clicking at any part of the element
+While dragging, the collum listens to dragover on the container.
+The container always calls preventDefault() so dropping is allowed.
+If there is no active dragged shell (_draggingShell is null), nothing happens.
+Otherwise:
+
+The Collums ensures a placeholder element exists (created once, reused).
+It calculates which shell is currently “after” the pointer (based on X position).
+It inserts the placeholder in the correct position:
+at the end, if no “after element” exists
+or before the “after element”, if it exists
+
+Drag start behavior (when dragging begins)
+Dragging is handled at the container level using event delegation.
+A drag operation is only allowed if the dragstart originates from:
+
+an element that is (or is inside) ui-card-retro.
+
+If dragstart did not come from the move icon:
+
+drag is cancelled (preventDefault()).
+
+If dragstart is valid:
+
+the collum identifies the corresponding shell 
+
+that shell becomes the active dragged item (this._draggingShell = shell).
+
+the shell receives a “dragging” CSS state class
+the drag payload is “enabled” for moving:
+effectAllowed = "move"
+empty data is set to satisfy some browsers.
+
+While dragging, the gallery listens to dragover on the container.
+The container always calls preventDefault() so dropping is allowed.
+If there is no active dragged shell (_draggingShell is null), nothing happens.
+Otherwise:
+The gallery ensures a placeholder element exists (created once, reused).
+It calculates which shell is currently “after” the pointer (based on X position).
+It inserts the placeholder in the correct position:
+at the end, if no “after element” exists
+or before the “after element”, if it exists
+
+Drop behavior (when the user releases)
+
+On drop:
+
+Default is prevented.
+If no active dragged shell exists, nothing happens.
+If placeholder exists inside the container:
+The dragged shell is inserted before the placeholder
+Placeholder is removed
+Dragging state is cleared:
+remove CSS class
+_draggingShell = null
+
+Drag end behavior (cleanup)
+When dragging ends (successful or canceled):
+the dragging class is removed (if any)
+_draggingShell is cleared
+placeholder is removed if it exists
+
+

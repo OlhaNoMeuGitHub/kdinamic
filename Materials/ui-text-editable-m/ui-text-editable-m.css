@@ -1,0 +1,82 @@
+
+:host {
+    all: initial; /* Reseta todos os estilos */
+}
+
+.texteditable-input-container {
+    display: flex;
+    align-items: center; /* Centraliza o texto e o botão verticalmente */
+    gap: 10px; /* Adiciona espaço entre o texto e o botão */
+    margin: 20px auto; /* Adiciona espaçamento e centraliza horizontalmente */
+    width: 100%; /* Garante que o container ocupe toda a largura */
+}
+
+
+.texteditable-display {
+    padding: 8px;
+    background-color: inherit; /* Herda o fundo do card */
+    line-height: 1.5; /* Melhora a legibilidade */
+    word-wrap: break-word; /* Garante quebra de palavras longas */
+    word-break: break-word;
+    white-space: normal; /* Garante que o texto quebre ao alcançar o fim da linha */
+    text-align: left; /* Alinha o texto à esquerda */
+    flex: 1; /* Faz o texto ocupar o espaço restante */
+}
+
+.texteditable-textarea {
+    width: 100%; /* Define a largura do textarea */
+    padding: 3px 3px;
+    font-size: 14px;
+    border: none;
+    background-color: transparent;
+    resize: none;
+    box-sizing: border-box;
+    overflow: hidden;
+    outline: none;
+    transition: height 0.2s ease; /* Animação suave ao ajustar a altura */
+    text-align: left; /* Alinha o texto à esquerda */
+}
+
+.edit-texteditable-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.edit-texteditable-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.save-texteditable-button {
+    margin: 5px; /* Adiciona espaço entre textarea e botão */
+    background-color: #74b9ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.save-texteditable-button:hover {
+    background-color: #0056b3;
+}
+
+.save-texteditable-button:active {
+    background-color: #149174; /* Fundo ainda mais escuro ao clicar */
+    transform: scale(0.95); /* Botão encolhe ligeiramente ao clicar */
+}
+
+.save-texteditable-button svg {
+    fill: #fff; /* Cor do ícone */
+    width: 24px; /* Tamanho do ícone */
+    height: 24px; /* Tamanho do ícone */
+}

@@ -1,0 +1,81 @@
+﻿✅ Material Contract Spec (what every material must output)
+
+This is the documentation format you should require whenever a material is created/refactored.
+
+1) Identity
+
+Tag: ui-menu-opcoes-m
+
+Type: Material
+
+Purpose (1 line): A self-contained context menu UI with optional submenus.
+
+2) DOM Contract (what the material renders)
+
+Root interactive parts:
+
+#ui-menu-opcoes-m-icon (button toggles visibility)
+
+#ui-menu-opcoes-m-context (container of items)
+
+3) Inputs (Attributes / Properties)
+
+Properties
+
+items: MenuItem[]
+
+Setting this re-renders the menu.
+
+MenuItem shape
+
+text: string
+
+action?: () => void (optional callback, executed when clicked)
+
+submenu?: MenuItem[] (optional nested items)
+
+Attributes
+
+disabled: disables the icon button and closes the menu
+
+4) Outputs (Events / Callbacks)
+
+Callback execution: when a menu item is clicked, action() is called (if present)
+
+No domain events (good, stays generic)
+
+5) Public Methods
+
+getNativeElement(): HTMLElement | null
+
+returns #ui-menu-opcoes-m-context
+
+focus(): focuses #ui-menu-opcoes-m-icon
+
+6) Behavior Rules (self-contained)
+
+Clicking #ui-menu-opcoes-m-icon toggles menu visibility using CSS classes:
+
+ui-menu-opcoes-m-hidden / ui-menu-opcoes-m-visible
+
+Menu is positioned with fixed coordinates near the icon to avoid clipping.
+
+Clicking an item:
+
+runs action()
+
+closes the menu (removes visible, adds hidden)
+
+Submenus are rendered recursively.
+
+7) Integration Rules (how components should use it)
+
+A component must:
+
+create <ui-menu-opcoes-m>
+
+set .items = [...] with callbacks that belong to the component
+
+never reach into shadowRoot of the material
+
+never assume internal DOM beyond the public contract above

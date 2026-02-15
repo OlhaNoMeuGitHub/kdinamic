@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Exemplo de Ciclo de Vida de Web Component</title>
+</head>
+<body>
+
+    <!-- Utilização do componente personalizado -->
+    <meu-componente titulo="Texto inicial"></meu-componente>
+
+
+
+    <script src="componentes/meucomponente.js" type="module"></script>
+    <script>
+        var b = 1
+        // Exemplo de atualização de atributo
+        const componente = document.querySelector('meu-componente');
+    setInterval(() => {
+            b = b + 1
+            componente.setAttribute('titulo', 'Texto atualizado!' + b);
+        }, 2000);
+    </script>
+
+</body>
+</html>

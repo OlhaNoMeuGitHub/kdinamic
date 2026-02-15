@@ -1,0 +1,99 @@
+/* ui-column-retro/ui-column-retro.css */
+
+.ui-column-retro-root {
+    min-width: 280px;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  
+    background-color: #f7f7f7;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  .ui-column-retro-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  
+  .ui-column-retro-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.2;
+  
+    /* Helps long titles not break layout */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .ui-column-retro-menu {
+    flex: 0 0 auto;
+  }
+  
+  .ui-column-retro-create-card {
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 8px 10px;
+    background-color: #f0f0f0;
+  }
+  
+  .ui-column-retro-create-card:hover {
+    background-color: #e2e2e2;
+  }
+  
+  .ui-column-retro-cards {
+    min-height: 80px;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #ffffff;
+  
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  /* Card DnD support */
+  .ui-column-retro-card-wrapper {
+    border-radius: 8px;
+  
+    /* Makes dragging feel nicer and avoids weird text selection */
+    user-select: none;
+  }
+  
+  .ui-column-retro-dragging-card {
+    opacity: 0.5;
+  }
+  
+  /*
+    Placeholder for drop position.
+    Using height > 2px makes the target easier to see and hit.
+  */
+  .ui-column-retro-drop-line-card {
+    height: 12px;
+    width: 100%;
+    border-radius: 6px;
+    background-color: #ddd;
+  }
+  
+  /* Title edit input */
+  .ui-column-retro-title-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    outline: none;
+  }
+  
+  .ui-column-retro-title-input:focus {
+    border-color: #bbb;
+  }
+  

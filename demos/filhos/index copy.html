@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exemplo de Lazy Load Dinâmico com Import</title>
+  <head>
+    <link rel="icon" href=
+    "https://media.geeksforgeeks.org/wp-content/cdn-uploads/gfg_200X200.png" 
+              type="image/x-icon">
+    <meta charset="UTF-8">
+</head>
+<body>
+  <h1>Exemplo de Web Components com Import Dinâmico em Site Estático</h1>
+
+  <!-- Usa apenas o componente pai -->
+  <!-- Cada componente pai passa um valor inicial diferente para o componente filho -->
+  <meu-componente-pai inicial="2" texto="filho 1"></meu-componente-pai>
+  <meu-componente-pai inicial="5" texto="filho 2"></meu-componente-pai>
+
+  <!-- Script utilitário carregado primeiro -->
+  
+  <!-- Script para carregar o componente pai -->
+  <script src="componentes/meu-componente-pai/meu-componente-pai.js" type="module"></script>
+</body>
+</html>
