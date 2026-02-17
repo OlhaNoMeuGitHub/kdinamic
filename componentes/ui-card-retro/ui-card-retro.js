@@ -64,6 +64,7 @@ class UiCardRetro extends HTMLElement {
   
       this.commentButton = this.shadowRoot.querySelector(".comment-button");
       this.commentSection = this.shadowRoot.querySelector(".comment-section");
+      this.commentsDisplayContainer = this.shadowRoot.querySelector(".comments-display-container");
   
       this.commentInputContainer = this.shadowRoot.querySelector(".comment-input-container");
       this.commentTextarea = this.commentInputContainer?.querySelector(".comment-textarea");
@@ -226,18 +227,22 @@ class UiCardRetro extends HTMLElement {
     
 
     renderComments() {
-        this.commentSection.querySelectorAll('text-editable').forEach(comment => comment.remove()); // Remove apenas os comentários antigos
-    
-        this.comments.forEach(comment => {
-            const commentElement = document.createElement("text-editable");
-            this.commentSection.appendChild(commentElement);
-            commentElement.setText(comment);
-            commentElement.onSaveCallback = (newText) => {
-                const index = this.comments.indexOf(comment);
-                if (index >= 0) {
-                    this.comments[index] = newText;
-                }
-            }
+        if (!this.commentsDisplayContainer) return;
+
+        this.commentsDisplayContainer.innerHTML = "";
+
+        if (this.comments.length === 0) {
+            this.commentsDisplayContainer.style.display = "none";
+            return;
+        }
+
+        this.commentsDisplayContainer.style.display = "block";
+
+        this.comments.forEach((comment) => {
+            const commentElement = document.createElement("div");
+            commentElement.className = "comment";
+            commentElement.textContent = comment;
+            this.commentsDisplayContainer.appendChild(commentElement);
         });
     }
 
