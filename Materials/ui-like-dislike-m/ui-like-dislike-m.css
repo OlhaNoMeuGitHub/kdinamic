@@ -1,0 +1,65 @@
+:host {
+  --ui-like-dislike-m-like-color: #ff7675;
+  --ui-like-dislike-m-dislike-color: #888888;
+  --ui-like-dislike-m-dislike-hover-color: #d63031;
+  --ui-like-dislike-m-count-color: #555555;
+  --ui-like-dislike-m-button-width: 16px;
+  --ui-like-dislike-m-button-height: 18px;
+  --ui-like-dislike-m-font-size: 12px;
+  --ui-like-dislike-m-gap: 5px;
+
+  display: inline-flex;
+  align-items: center;
+}
+
+.ui-like-dislike-m-root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ui-like-dislike-m-gap);
+}
+
+.ui-like-dislike-m-like-button,
+.ui-like-dislike-m-dislike-button {
+  background-color: transparent;
+  width: var(--ui-like-dislike-m-button-width);
+  height: var(--ui-like-dislike-m-button-height);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--ui-like-dislike-m-font-size);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.ui-like-dislike-m-like-button {
+  color: var(--ui-like-dislike-m-like-color);
+}
+
+.ui-like-dislike-m-count {
+  font-size: var(--ui-like-dislike-m-font-size);
+  color: var(--ui-like-dislike-m-count-color);
+  width: var(--ui-like-dislike-m-button-width);
+  height: var(--ui-like-dislike-m-button-height);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  line-height: 1;
+  padding: 0;
+  transform: translateY(1px);
+}
+
+.ui-like-dislike-m-dislike-button {
+  color: var(--ui-like-dislike-m-dislike-color);
+  display: none;
+}
+
+:host([data-dislike-visible="true"]) .ui-like-dislike-m-dislike-button {
+  display: inline-flex;
+}
+
+.ui-like-dislike-m-dislike-button:hover {
+  color: var(--ui-like-dislike-m-dislike-hover-color);
+}

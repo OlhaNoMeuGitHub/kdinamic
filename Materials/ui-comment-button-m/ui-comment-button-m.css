@@ -1,0 +1,50 @@
+:host {
+  --ui-comment-button-m-color: #333333;
+  --ui-comment-button-m-hover-color: #007bff;
+  --ui-comment-button-m-count-color: #555555;
+  --ui-comment-button-m-button-width: 16px;
+  --ui-comment-button-m-button-height: 18px;
+  --ui-comment-button-m-gap: 5px;
+
+  display: inline-flex;
+  align-items: center;
+}
+
+.ui-comment-button-m-root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ui-comment-button-m-gap);
+}
+
+.ui-comment-button-m-button {
+  background-color: transparent;
+  border: none;
+  color: var(--ui-comment-button-m-color);
+  width: var(--ui-comment-button-m-button-width);
+  height: var(--ui-comment-button-m-button-height);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.ui-comment-button-m-button:hover {
+  color: var(--ui-comment-button-m-hover-color);
+}
+
+.ui-comment-button-m-count {
+  font-size: 12px;
+  color: var(--ui-comment-button-m-count-color);
+  width: var(--ui-comment-button-m-button-width);
+  height: var(--ui-comment-button-m-button-height);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  line-height: 1;
+  padding: 0;
+  transform: translateY(1px);
+}

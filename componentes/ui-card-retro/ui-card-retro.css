@@ -14,13 +14,13 @@
     transition: background-color 0.3s ease;
 }
 
-/* Card branco quando o textarea é editável */
+/* Card branco quando o textarea eh editavel */
 .textarea-container:not(:disabled) ~ .card-container {
     background-color: #33b172;
 }
 
 
-/* Card branco quando o textarea é editável */
+/* Card branco quando o textarea eh editavel */
 .textarea-container:disabled ~ .card-container {
     background-color: #a82c2c;
 }
@@ -54,7 +54,7 @@
     padding: 8px;
     font-size: 14px;
     line-height: 1.5;
-    background-color: inherit; /* Herdar a cor de fundo do contêiner */
+    background-color: inherit; /* Herdar a cor de fundo do container */
     border: none; /* Remove a borda */
     white-space: pre-wrap; /* Respeita as quebras de linha */
 }
@@ -65,19 +65,19 @@
     border-color: #f9f9f9;
 }
 
-/* Ocultar menu-opcoes e card-actions quando textarea é editável */
+/* Ocultar menu-opcoes e card-actions quando textarea eh editavel */
 .card-textarea:not(:disabled) ~ .menu-opcoes,
 .card-textarea:not(:disabled) ~ .card-actions {
     display: none;
 }
 
-/* Exibir menu-opcoes e card-actions quando textarea está bloqueado */
+/* Exibir menu-opcoes e card-actions quando textarea esta bloqueado */
 .card-textarea:disabled ~ .menu-opcoes,
 .card-textarea:disabled ~ .card-actions {
     display: flex;
 }
 
-/* Ocultar menu-opcoes e card-actions quando textarea é editável */
+/* Ocultar menu-opcoes e card-actions quando textarea eh editavel */
 
 
 .menu-opcoes {
@@ -100,79 +100,15 @@
     justify-content: flex-end;
 }
 
-.like-container {
+.like-material {
     display: inline-flex;
     align-items: center;
     gap: 5px;
 }
-
-.like-button {
-    background-color: transparent;
-    color: #ff7675;
-    width: 16px;
-    height: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px; /* Ajusta o tamanho do ícone */
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    line-height: 1; /* Garante que o ícone esteja centralizado verticalmente */
-    overflow: hidden; /* Remove qualquer conteúdo que ultrapasse o tamanho do botão */
-}
-
-.like-count {
-    font-size: 12px; /* Ajusta o tamanho do texto */
-    color: #555;
-    width: 16px;
-    height: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    line-height: 1; /* Centraliza verticalmente o número */
-    padding: 0;
-    transform: translateY(1px);
-}
-
-.dislike-button {
-    background-color: transparent;
-    color: #888;
-    width: 16px;
-    height: 18px;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    line-height: 1;
-}
-
-.dislike-button:hover {
-    color: #d63031;
-}
-
-.comment-container {
+.comment-material {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-}
-
-.comment-count {
-    font-size: 12px;
-    color: #555;
-    width: 16px;
-    height: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    line-height: 1;
-    padding: 0;
-    transform: translateY(1px);
 }
 
 
@@ -189,25 +125,6 @@
 
 
 
-.comment-button {
-    background-color: transparent;
-    border: none;
-    width: 16px;
-    height: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-    margin-left: 0;
-}
-
-.comment-button:hover {
-    color: #007bff;
-}
-
 .comment-textarea {
     width: 100%; /* Define a largura do textarea como menor */
     padding: 3px 3px;
@@ -218,7 +135,7 @@
     box-sizing: border-box;
     overflow: hidden;
     outline: none;
-    transition: height 0.2s ease; /* Animação suave ao ajustar a altura */
+    transition: height 0.2s ease; /* Animacao suave ao ajustar a altura */
 }
 
 .comment-textarea:focus {
@@ -227,7 +144,7 @@
 }
 
 .save-comment-button {
-    margin: 5px; /* Adiciona espaço entre textarea e botão */
+    margin: 5px; /* Adiciona espaco entre textarea e botao */
     background-color: #74b9ff;
     color: white;
     border: none;
@@ -245,34 +162,34 @@
 
 .save-comment-button:active {
     background-color: #149174; /* Fundo ainda mais escuro ao clicar */
-    transform: scale(0.95); /* Botão encolhe ligeiramente ao clicar */
+    transform: scale(0.95); /* Botao encolhe ligeiramente ao clicar */
 }
 
 .save-comment-button svg {
-    fill: #fff; /* Cor do ícone */
-    width: 24px; /* Tamanho do ícone */
-    height: 24px; /* Tamanho do ícone */
+    fill: #fff; /* Cor do icone */
+    width: 24px; /* Tamanho do icone */
+    height: 24px; /* Tamanho do icone */
 }
 .comments-display-container {
     max-width: 100%; /* Garante que o container respeite a largura do pai */
     overflow-wrap: break-word; /* Quebra palavras longas automaticamente */
     word-wrap: break-word; /* Compatibilidade com navegadores antigos */
-    word-break: break-word; /* Quebra o texto quando necessário */
-    white-space: normal; /* Permite que o texto quebre para a próxima linha */
+    word-break: break-word; /* Quebra o texto quando necessario */
+    white-space: normal; /* Permite que o texto quebre para a proxima linha */
 }
 
 .comment {
     padding: 8px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1); /* Linha divisória ligeiramente mais escura */
+    border-top: 1px solid rgba(0, 0, 0, 0.1); /* Linha divisoria ligeiramente mais escura */
     background-color: inherit; /* Herda o fundo do card */
     line-height: 1.5; /* Melhora a legibilidade */
     word-wrap: break-word; /* Garante quebra de palavras longas */
     word-break: break-word;
-    white-space: normal; /* Garante que o texto quebre ao alcançar o fim da linha */
+    white-space: normal; /* Garante que o texto quebre ao alcancar o fim da linha */
 }
 
 .comment:first-child {
-    border-top: none; /* Remove a linha divisória para o primeiro comentário */
+    border-top: none; /* Remove a linha divisoria para o primeiro comentario */
 }
 
 
@@ -283,10 +200,11 @@
     border-radius: 4px;
     transition: background-color 0.3s ease, border-color 0.3s ease;
 
-    flex-direction: column; /* Organiza textarea e botão verticalmente */
+    flex-direction: column; /* Organiza textarea e botao verticalmente */
     align-items: flex-end; /* Centraliza horizontalmente */
-    margin: 20px auto; /* Adiciona espaçamento e centraliza horizontalmente */
+    margin: 20px auto; /* Adiciona espacamento e centraliza horizontalmente */
     width: 100%; /* Garante que o container ocupe toda a largura */
 }
+
 
 
