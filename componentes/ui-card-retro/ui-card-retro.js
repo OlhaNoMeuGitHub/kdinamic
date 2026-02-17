@@ -54,6 +54,7 @@ class UiCardRetro extends HTMLElement {
   
       this.likeButton = this.shadowRoot.querySelector(".like-button");
       this.likeCount = this.shadowRoot.querySelector(".like-count");
+      this.dislikeButton = this.shadowRoot.querySelector(".dislike-button");
   
       this.saveButton = this.shadowRoot.querySelector(".save-button");
   
@@ -63,7 +64,9 @@ class UiCardRetro extends HTMLElement {
       this.cardContainer = this.shadowRoot.querySelector(".card-container");
   
       this.commentButton = this.shadowRoot.querySelector(".comment-button");
+      this.commentCount = this.shadowRoot.querySelector(".comment-count");
       this.commentSection = this.shadowRoot.querySelector(".comment-section");
+      this.commentsDisplayContainer = this.shadowRoot.querySelector(".comments-display-container");
   
       this.commentInputContainer = this.shadowRoot.querySelector(".comment-input-container");
       this.commentTextarea = this.commentInputContainer?.querySelector(".comment-textarea");
@@ -79,6 +82,10 @@ class UiCardRetro extends HTMLElement {
   
       if (this.likeButton) {
         this.likeButton.addEventListener("click", () => this.handleLikeButtonClick());
+      }
+
+      if (this.dislikeButton) {
+        this.dislikeButton.addEventListener("click", () => this.handleDislikeButtonClick());
       }
   
       if (this.saveButton) {
@@ -149,8 +156,9 @@ class UiCardRetro extends HTMLElement {
       }
   
       // Ensure counts and state are reflected
-      if (this.likeCount) this.likeCount.textContent = `${this.likes}`;
-  
+      this.updateLikeControls();
+      this.updateCommentCount();
+
       this.updateUIState();
       this.renderComments(); // safe if you implement it idempotently
     }
@@ -160,7 +168,13 @@ class UiCardRetro extends HTMLElement {
 
     handleLikeButtonClick() {
         this.likes++;
-        this.likeCount.textContent = `${this.likes}`;
+        this.updateLikeControls();
+    }
+
+    handleDislikeButtonClick() {
+        if (this.likes === 0) return;
+        this.likes--;
+        this.updateLikeControls();
     }
 
     handleAjustHighComment() {
@@ -219,6 +233,7 @@ class UiCardRetro extends HTMLElement {
         if (commentText) {
             this.comments.push(commentText); // Adiciona o comentário
             commentTextarea.value = ""; // Limpa o campo
+            this.updateCommentCount();
             this.renderComments();
         }
     }
@@ -226,19 +241,36 @@ class UiCardRetro extends HTMLElement {
     
 
     renderComments() {
-        this.commentSection.querySelectorAll('text-editable').forEach(comment => comment.remove()); // Remove apenas os comentários antigos
-    
-        this.comments.forEach(comment => {
-            const commentElement = document.createElement("text-editable");
-            this.commentSection.appendChild(commentElement);
-            commentElement.setText(comment);
-            commentElement.onSaveCallback = (newText) => {
-                const index = this.comments.indexOf(comment);
-                if (index >= 0) {
-                    this.comments[index] = newText;
-                }
-            }
+        if (!this.commentsDisplayContainer) return;
+
+        this.commentsDisplayContainer.innerHTML = "";
+
+        if (this.comments.length === 0) {
+            this.commentsDisplayContainer.style.display = "none";
+            return;
+        }
+
+        this.commentsDisplayContainer.style.display = "block";
+
+        this.comments.forEach((comment) => {
+            const commentElement = document.createElement("div");
+            commentElement.className = "comment";
+            commentElement.textContent = comment;
+            this.commentsDisplayContainer.appendChild(commentElement);
         });
+    }
+
+    updateCommentCount() {
+        if (!this.commentCount) return;
+        this.commentCount.textContent = `${this.comments.length}`;
+    }
+
+    updateLikeControls() {
+        if (this.likeCount) this.likeCount.textContent = `${this.likes}`;
+        if (!this.dislikeButton) return;
+
+        const shouldShowDislike = !!this.textarea?.disabled && this.likes > 0;
+        this.dislikeButton.style.display = shouldShowDislike ? "inline-flex" : "none";
     }
 
     
@@ -302,7 +334,9 @@ class UiCardRetro extends HTMLElement {
             this.applyEffectiveColor();
             this.likeButton.style.display = "inline-block";
             this.commentButton.style.display = "inline-block";
+            if (this.commentCount) this.commentCount.style.display = "inline-block";
             this.likeCount.style.display = "inline-block";
+            this.updateLikeControls();
             this.saveButton.style.display = "none";
             this.menuOpcoes.classList.add("visible");
         } else {
@@ -310,7 +344,9 @@ class UiCardRetro extends HTMLElement {
             this.cardContainer.style.backgroundColor = "#ffffff";
             this.likeButton.style.display = "none";
             this.likeCount.style.display = "none";
+            if (this.dislikeButton) this.dislikeButton.style.display = "none";
             this.commentButton.style.display = "none";
+            if (this.commentCount) this.commentCount.style.display = "none";
         }
     }
 
