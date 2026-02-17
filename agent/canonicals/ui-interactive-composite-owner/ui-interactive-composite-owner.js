@@ -5,6 +5,8 @@ import { loadComponentAssets, loadComponentIfNotExists } from "../../utils.js";
  *
  * @type InteractiveCompositeOwner
  * @contracts naming lifecycle events css-system drag-system layout-scroll
+ * @trait interactive-shell-orchestrator
+ * @trait cross-child-dropzone-orchestrator
  *
  * Demonstrates:
  * - parent owns shells (reorder/movement)
@@ -13,6 +15,9 @@ import { loadComponentAssets, loadComponentIfNotExists } from "../../utils.js";
  * - child exposes drop zone API (getDropZone)
  * - intent events bubble + composed
  */
+// TRAIT: interactive-shell-orchestrator
+// This canonical represents an interactive-owner trait that controls
+// structure, handle-based reordering, and child intents.
 class UiInteractiveCompositeOwner extends HTMLElement {
   constructor() {
     super();
@@ -30,6 +35,7 @@ class UiInteractiveCompositeOwner extends HTMLElement {
   }
 
   async connectedCallback() {
+    // TRAIT: lifecycle-idempotent-mount
     if (!this._initialized) {
       await this.initializeOnce();
       this._initialized = true;
@@ -38,6 +44,7 @@ class UiInteractiveCompositeOwner extends HTMLElement {
   }
 
   async initializeOnce() {
+    // TRAIT: owner-asset-bootstrap
     await loadComponentAssets(this, "ui-interactive-composite-owner");
     await loadComponentIfNotExists("ui-ico-child");
 
@@ -66,6 +73,7 @@ class UiInteractiveCompositeOwner extends HTMLElement {
   // Parent-owned shells
   // ------------------------------------------------------------
   createChildShell() {
+    // TRAIT: parent-owned-shell-creation
     if (!this._board) return;
 
     const shell = document.createElement("div");
@@ -112,6 +120,7 @@ class UiInteractiveCompositeOwner extends HTMLElement {
   // ------------------------------------------------------------
   // Drag dispatcher
   // ------------------------------------------------------------
+  // TRAIT: drag-intent-dispatcher
   handleAnyDragStart(event) {
     const handle = event.target?.closest?.(".ui-interactive-composite-owner-handle");
     if (handle) {
@@ -154,6 +163,7 @@ class UiInteractiveCompositeOwner extends HTMLElement {
     return ph;
   }
 
+  // TRAIT: handle-only-shell-drag
   handleShellDragStart(event, handleEl) {
     const shell = handleEl.closest(".ui-interactive-composite-owner-shell");
     if (!shell) return;
@@ -235,6 +245,7 @@ class UiInteractiveCompositeOwner extends HTMLElement {
     event.dataTransfer.setData("text/plain", "");
   }
 
+  // TRAIT: cross-child-dropzone-orchestrator
   handleItemDragOver(event) {
     event.preventDefault();
     if (!this._draggingItemShell) return;
