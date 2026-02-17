@@ -27,8 +27,7 @@ class UiColumnRetro extends HTMLElement {
     // Internal state (once)
     this._titleText = "";
     this._isEditingTitle = false;
-    this._cardsColor = null; // or a default like "#f9f9f9"
-    this._columnCardsColor = null;
+    this._cardsColor = null;
 
     // Cache DOM refs
     this._titleEl = this.shadowRoot.querySelector("#ui-column-retro-title");
@@ -104,27 +103,27 @@ class UiColumnRetro extends HTMLElement {
   handleChangeColorClick(color) {
     if (!color) return;
   
-    this._cardsColor = color;             // ✅ persist
+    this._cardsColor = color;
     this.applyInheritedColorToCards(color);
   
     this.dispatchEvent(
       new CustomEvent("ui-column-change-color", {
         bubbles: true,
         composed: true,
-        detail: { column: this, color: "#E6E6FA" },
+        detail: { column: this, color },
       })
     );
     
   }
   
   setCardsInheritedColor(color) {
-    this._cardsInheritedColor = color ?? null;
+    this._cardsColor = color ?? null;
   
     const shells = this._cardsContainer?.querySelectorAll(".ui-column-retro-card-wrapper") ?? [];
     shells.forEach((shell) => {
       const card = shell.querySelector("ui-card-retro");
       if (card && typeof card.setInheritedColor === "function") {
-        card.setInheritedColor(this._cardsInheritedColor);
+        card.setInheritedColor(this._cardsColor);
       }
     });
   }
@@ -181,7 +180,7 @@ class UiColumnRetro extends HTMLElement {
 
     const card = document.createElement("ui-card-retro");
     if (typeof card.setInheritedColor === "function") {
-      card.setInheritedColor(this._columnCardsColor);
+      card.setInheritedColor(this._cardsColor);
       
     }
     shell.appendChild(card);
