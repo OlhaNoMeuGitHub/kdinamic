@@ -1,0 +1,68 @@
+:host {
+  display: block;
+
+  --ui-ico-child-border: #ddd;
+  --ui-ico-child-radius: 10px;
+  --ui-ico-child-bg: #fff;
+  --ui-ico-child-surface: #fafafa;
+}
+
+.ui-ico-child-root {
+  width: 260px;
+  border: 1px solid var(--ui-ico-child-border);
+  border-radius: var(--ui-ico-child-radius);
+  background: var(--ui-ico-child-bg);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.ui-ico-child-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.ui-ico-child-title {
+  margin: 0;
+  font-size: 14px;
+}
+
+.ui-ico-child-delete {
+  cursor: pointer;
+  border: 1px solid var(--ui-ico-child-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: #fff;
+}
+
+.ui-ico-child-dropzone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+}
+
+/* Internal draggable items (allowed) */
+.ui-ico-child-item-shell {
+  padding: 8px;
+  border: 1px solid var(--ui-ico-child-border);
+  border-radius: 8px;
+  background: var(--ui-ico-child-surface);
+  cursor: grab;
+  user-select: none;
+}
+
+.ui-ico-child-item-shell:active {
+  cursor: grabbing;
+}
+
+.ui-ico-child-dragging-item {
+  opacity: 0.6;
+}

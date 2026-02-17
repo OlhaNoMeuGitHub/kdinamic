@@ -13,3 +13,21 @@ Internal drag:
 
 Cross-component drag:
 - owned by parent
+
+
+Shell Pattern:
+
+<div class="shell">
+  <handle draggable="true"></handle>
+  <component></component>
+</div>
+
+Parent Responsibilities:
+
+- detect drag context
+- compute drop targets
+- insert placeholder
+
+Child Responsibilities:
+
+- expose drop API

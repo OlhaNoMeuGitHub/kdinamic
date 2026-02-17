@@ -1,0 +1,33 @@
+:host {
+  --ui-leaf-bg: #f9f9f9;
+  --ui-leaf-border: #ddd;
+  --ui-leaf-radius: 8px;
+  display: block;
+}
+
+.ui-leaf-root {
+  border: 1px solid var(--ui-leaf-border);
+  border-radius: var(--ui-leaf-radius);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: var(--ui-leaf-bg);
+}
+
+.ui-leaf-body {
+  display: flex;
+  position: relative;
+}
+
+.ui-leaf-text-display {
+  display: none;
+}
+
+:host([data-mode="view"]) .ui-leaf-textarea {
+  display: none;
+}
+
+:host([data-mode="view"]) .ui-leaf-text-display {
+  display: block;
+}

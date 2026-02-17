@@ -1,0 +1,102 @@
+:host {
+  /* tokens */
+  --ui-interactive-composite-owner-bg: #f0f0f0;
+  --ui-interactive-composite-owner-surface: #f7f7f7;
+  --ui-interactive-composite-owner-border: #ddd;
+  --ui-interactive-composite-owner-radius: 8px;
+  --ui-interactive-composite-owner-gap: 12px;
+
+  display: block;
+}
+
+/* Root fills viewport naturally (no internal vertical scroll trap) */
+.ui-interactive-composite-owner-root {
+  min-height: 100dvh;
+  padding: 16px;
+  background: var(--ui-interactive-composite-owner-bg);
+  border: 1px solid var(--ui-interactive-composite-owner-border);
+  border-radius: var(--ui-interactive-composite-owner-radius);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-interactive-composite-owner-gap);
+
+  overflow: visible;
+}
+
+.ui-interactive-composite-owner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ui-interactive-composite-owner-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.ui-interactive-composite-owner-add-child-button {
+  border: 1px solid var(--ui-interactive-composite-owner-border);
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* Board: horizontal scroll allowed; vertical scroll stays document-level */
+.ui-interactive-composite-owner-board {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+
+  background: var(--ui-interactive-composite-owner-surface);
+  padding: 16px;
+  border-radius: 10px;
+
+  overflow-x: auto;
+  overflow-y: visible;
+
+  min-height: 70dvh;
+  min-width: 0;
+}
+
+/* Parent-owned shell: handle + child component */
+.ui-interactive-composite-owner-shell {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+/* Only the handle is draggable */
+.ui-interactive-composite-owner-handle {
+  cursor: grab;
+  user-select: none;
+  font-size: 18px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  border: 1px solid var(--ui-interactive-composite-owner-border);
+  background: #fff;
+}
+
+.ui-interactive-composite-owner-handle:active {
+  cursor: grabbing;
+}
+
+.ui-interactive-composite-owner-dragging-shell {
+  opacity: 0.5;
+}
+
+.ui-interactive-composite-owner-shell-placeholder {
+  width: 4px;
+  background: #ccc;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.ui-interactive-composite-owner-item-placeholder {
+  height: 2px;
+  background: #ccc;
+  border-radius: 2px;
+}
