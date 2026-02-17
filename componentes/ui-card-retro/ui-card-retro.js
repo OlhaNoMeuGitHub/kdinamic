@@ -4,6 +4,8 @@ class UiCardRetro extends HTMLElement {
       super();
       this.attachShadow({ mode: "open" });
       this._initialized = false;
+      this._userColor = null;
+      this._inheritedColor = null;
     }
   
     static get observedAttributes() {
@@ -32,8 +34,8 @@ class UiCardRetro extends HTMLElement {
       this.text = this.getAttribute("text") ?? "";
       this.color = "#f9f9f9";
       this.comments = [];
-      this._userColor = null;
-      this._inheritedColor = null;
+      this._userColor = this._userColor ?? null;
+      this._inheritedColor = this._inheritedColor ?? null;
   
       await loadComponentAssets(this, "ui-card-retro");
   
