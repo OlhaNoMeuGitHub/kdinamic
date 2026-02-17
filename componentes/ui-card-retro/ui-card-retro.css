@@ -1,4 +1,11 @@
 /* /componentes/card-retro.css */
+:host {
+    --ui-card-retro-delete-comment-size: 24px;
+    --ui-card-retro-delete-comment-color: #666666;
+    --ui-card-retro-delete-comment-hover-color: #111111;
+    --ui-card-retro-delete-comment-hover-bg: rgba(0, 0, 0, 0.08);
+}
+
 .card-container {
     width: 100%;
     max-width: 500px;
@@ -171,7 +178,9 @@
     height: 24px; /* Tamanho do icone */
 }
 .comments-display-container {
+    width: 100%;
     max-width: 100%; /* Garante que o container respeite a largura do pai */
+    box-sizing: border-box;
     overflow-wrap: break-word; /* Quebra palavras longas automaticamente */
     word-wrap: break-word; /* Compatibilidade com navegadores antigos */
     word-break: break-word; /* Quebra o texto quando necessario */
@@ -179,17 +188,47 @@
 }
 
 .comment {
+    width: 100%;
+    box-sizing: border-box;
     padding: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
     border-top: 1px solid rgba(0, 0, 0, 0.1); /* Linha divisoria ligeiramente mais escura */
     background-color: inherit; /* Herda o fundo do card */
-    line-height: 1.5; /* Melhora a legibilidade */
-    word-wrap: break-word; /* Garante quebra de palavras longas */
-    word-break: break-word;
-    white-space: normal; /* Garante que o texto quebre ao alcancar o fim da linha */
 }
 
 .comment:first-child {
     border-top: none; /* Remove a linha divisoria para o primeiro comentario */
+}
+
+.comment-text {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.5; /* Melhora a legibilidade */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.delete-comment-button {
+    flex: 0 0 auto;
+    margin-left: auto;
+    width: var(--ui-card-retro-delete-comment-size);
+    height: var(--ui-card-retro-delete-comment-size);
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--ui-card-retro-delete-comment-color);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+.delete-comment-button:hover {
+    background-color: var(--ui-card-retro-delete-comment-hover-bg);
+    color: var(--ui-card-retro-delete-comment-hover-color);
 }
 
 

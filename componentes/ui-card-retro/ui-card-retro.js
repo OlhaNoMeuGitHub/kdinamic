@@ -210,6 +210,14 @@ class UiCardRetro extends HTMLElement {
     this.renderComments();
   }
 
+  deleteCommentByIndex(commentIndex) {
+    if (commentIndex < 0 || commentIndex >= this.comments.length) return;
+
+    this.comments.splice(commentIndex, 1);
+    this.updateCommentCount();
+    this.renderComments();
+  }
+
   renderComments() {
     if (!this.commentsDisplayContainer) return;
 
@@ -222,10 +230,23 @@ class UiCardRetro extends HTMLElement {
 
     this.commentsDisplayContainer.style.display = "block";
 
-    this.comments.forEach((comment) => {
+    this.comments.forEach((comment, index) => {
       const commentElement = document.createElement("div");
       commentElement.className = "comment";
-      commentElement.textContent = comment;
+
+      const commentTextElement = document.createElement("span");
+      commentTextElement.className = "comment-text";
+      commentTextElement.textContent = comment;
+
+      const deleteCommentButton = document.createElement("button");
+      deleteCommentButton.className = "delete-comment-button";
+      deleteCommentButton.type = "button";
+      deleteCommentButton.textContent = "X";
+      deleteCommentButton.setAttribute("aria-label", "Deletar comentario");
+      deleteCommentButton.addEventListener("click", () => this.deleteCommentByIndex(index));
+
+      commentElement.appendChild(commentTextElement);
+      commentElement.appendChild(deleteCommentButton);
       this.commentsDisplayContainer.appendChild(commentElement);
     });
   }
