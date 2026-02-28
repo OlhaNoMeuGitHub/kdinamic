@@ -1,16 +1,43 @@
 /* ui-column-retro/ui-column-retro.css */
 
+:host {
+    --ui-column-retro-inline-size: clamp(260px, 28vw, 320px);
+    --ui-column-retro-gap: 10px;
+    --ui-column-retro-padding: 12px;
+    --ui-column-retro-radius: 10px;
+    --ui-column-retro-cards-radius: 8px;
+    --ui-column-retro-title-size: 16px;
+
+    --ui-column-retro-bg: #f7f7f7;
+    --ui-column-retro-cards-bg: #ffffff;
+    --ui-column-retro-title-color: #333333;
+    --ui-column-retro-button-bg: #f0f0f0;
+    --ui-column-retro-button-bg-hover: #e2e2e2;
+    --ui-column-retro-border: #dddddd;
+    --ui-column-retro-placeholder-bg: #dddddd;
+    --ui-column-retro-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+
+    display: block;
+    inline-size: var(--ui-column-retro-inline-size);
+    flex: 0 0 var(--ui-column-retro-inline-size);
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
 .ui-column-retro-root {
-    min-width: 280px;
-    max-width: 320px;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--ui-column-retro-gap);
   
-    background-color: #f7f7f7;
-    border-radius: 10px;
-    padding: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    background-color: var(--ui-column-retro-bg);
+    border-radius: var(--ui-column-retro-radius);
+    padding: var(--ui-column-retro-padding);
+    box-shadow: var(--ui-column-retro-shadow);
+    box-sizing: border-box;
   }
   
   .ui-column-retro-header {
@@ -18,13 +45,16 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+    min-width: 0;
   }
   
   .ui-column-retro-title {
+    flex: 1 1 auto;
+    min-width: 0;
     margin: 0;
-    font-size: 16px;
+    font-size: var(--ui-column-retro-title-size);
     font-weight: 700;
-    color: #333;
+    color: var(--ui-column-retro-title-color);
     line-height: 1.2;
   
     /* Helps long titles not break layout */
@@ -42,30 +72,40 @@
     border-radius: 6px;
     cursor: pointer;
     padding: 8px 10px;
-    background-color: #f0f0f0;
+    background-color: var(--ui-column-retro-button-bg);
   }
   
   .ui-column-retro-create-card:hover {
-    background-color: #e2e2e2;
+    background-color: var(--ui-column-retro-button-bg-hover);
   }
   
   .ui-column-retro-cards {
     min-height: 80px;
+    min-width: 0;
     padding: 10px;
-    border-radius: 8px;
-    background-color: #ffffff;
+    border-radius: var(--ui-column-retro-cards-radius);
+    background-color: var(--ui-column-retro-cards-bg);
   
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--ui-column-retro-gap);
   }
   
   /* Card DnD support */
   .ui-column-retro-card-wrapper {
+    width: 100%;
+    min-width: 0;
     border-radius: 8px;
   
     /* Makes dragging feel nicer and avoids weird text selection */
     user-select: none;
+  }
+
+  .ui-column-retro-card-wrapper > ui-card-retro {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
   
   .ui-column-retro-dragging-card {
@@ -78,22 +118,24 @@
   */
   .ui-column-retro-drop-line-card {
     height: 12px;
-    width: 100%;
+    inline-size: 100%;
     border-radius: 6px;
-    background-color: #ddd;
+    background-color: var(--ui-column-retro-placeholder-bg);
   }
   
   /* Title edit input */
   .ui-column-retro-title-input {
-    width: 100%;
+    display: block;
+    inline-size: 100%;
+    max-inline-size: 100%;
     box-sizing: border-box;
     padding: 6px;
     border-radius: 6px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--ui-column-retro-border);
     outline: none;
   }
   
   .ui-column-retro-title-input:focus {
-    border-color: #bbb;
+    border-color: var(--ui-column-retro-border);
   }
   

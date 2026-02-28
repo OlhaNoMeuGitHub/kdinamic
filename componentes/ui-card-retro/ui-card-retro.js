@@ -30,7 +30,6 @@ class UiCardRetro extends HTMLElement {
 
   async initializeOnce() {
     this.text = this.getAttribute("text") ?? "";
-    this.color = "#f9f9f9";
     this.comments = [];
     this._userColor = this._userColor ?? null;
     this._inheritedColor = this._inheritedColor ?? null;
@@ -45,25 +44,27 @@ class UiCardRetro extends HTMLElement {
     this.cacheElements();
     this.attachListenersOnce();
     this.configureMenuOnce();
+    this.setAttribute("data-ui-card-retro-comment-panel", "closed");
+    this.applyEffectiveColor();
   }
 
   cacheElements() {
-    this.textarea = this.shadowRoot.querySelector(".card-textarea");
-    this.textDisplay = this.shadowRoot.querySelector(".text-display");
+    this.textarea = this.shadowRoot.querySelector(".ui-card-retro-textarea");
+    this.textDisplay = this.shadowRoot.querySelector(".ui-card-retro-text-display");
 
     this.likeMaterial = this.shadowRoot.querySelector("ui-like-dislike-m");
 
-    this.saveButton = this.shadowRoot.querySelector(".save-button");
+    this.saveButton = this.shadowRoot.querySelector(".ui-card-retro-save-button");
     this.menuOpcoes = this.shadowRoot.querySelector("ui-menu-opcoes-m");
 
-    this.cardContainer = this.shadowRoot.querySelector(".card-container");
-
     this.commentMaterial = this.shadowRoot.querySelector("ui-comment-button-m");
-    this.commentSection = this.shadowRoot.querySelector(".comment-section");
-    this.commentsDisplayContainer = this.shadowRoot.querySelector(".comments-display-container");
+    this.commentsDisplayContainer = this.shadowRoot.querySelector(".ui-card-retro-comments-list");
 
-    this.commentInputContainer = this.shadowRoot.querySelector(".comment-input-container");
-    this.commentTextarea = this.commentInputContainer?.querySelector(".comment-textarea");
+    this.commentInputContainer = this.shadowRoot.querySelector(".ui-card-retro-comment-input-container");
+    this.commentTextarea = this.commentInputContainer?.querySelector(".ui-card-retro-comment-textarea");
+    this.commentSaveButton = this.commentInputContainer?.querySelector(
+      ".ui-card-retro-comment-save-button"
+    );
   }
 
   attachListenersOnce() {
@@ -84,8 +85,10 @@ class UiCardRetro extends HTMLElement {
       );
     }
 
-    if (this.commentTextarea) {
-      this.commentTextarea.addEventListener("input", () => this.handleAjustHighComment());
+    if (this.commentSaveButton) {
+      this.commentSaveButton.addEventListener("click", () =>
+        this.saveCommentFunction(this.commentTextarea)
+      );
     }
   }
 
@@ -94,17 +97,28 @@ class UiCardRetro extends HTMLElement {
   }
 
   getEffectiveColor() {
-    return this._userColor ?? this._inheritedColor ?? "#f9f9f9";
+    return this._userColor ?? this._inheritedColor ?? "default";
+  }
+
+  getColorKey(color) {
+    const normalizedColor = `${color ?? ""}`.trim().toUpperCase();
+    const colorMap = {
+      "#E6E6FA": "lavanda",
+      "#FFDAB9": "salmao",
+      "#F5FFFA": "menta",
+      "#B0E0E6": "ceu-azul",
+      "#FFFACD": "amarelo-pastel",
+    };
+    return colorMap[normalizedColor] ?? "default";
   }
 
   applyEffectiveColor() {
-    if (!this._initialized) return;
-    if (!this.cardContainer) return;
-    this.cardContainer.style.backgroundColor = this.getEffectiveColor();
+    const colorKey = this.getEffectiveColor();
+    this.setAttribute("data-ui-card-retro-effective-color", colorKey);
   }
 
   setInheritedColor(color) {
-    this._inheritedColor = color ?? null;
+    this._inheritedColor = this.getColorKey(color);
     this.applyEffectiveColor();
   }
 
@@ -114,7 +128,7 @@ class UiCardRetro extends HTMLElement {
   }
 
   setUserColor(color) {
-    this._userColor = color ?? null;
+    this._userColor = this.getColorKey(color);
     this.applyEffectiveColor();
   }
 
@@ -144,11 +158,6 @@ class UiCardRetro extends HTMLElement {
     this.text = event.target.value;
   }
 
-  handleAjustHighComment() {
-    this.style.height = "auto";
-    this.style.height = `${this.scrollHeight}px`;
-  }
-
   handleSaveButtonClick() {
     this.setTextareaEditable(false);
 
@@ -166,33 +175,23 @@ class UiCardRetro extends HTMLElement {
   }
 
   handleCommentButtonClick() {
-    const commentInputContainer = this.shadowRoot.querySelector(".comment-input-container");
-    const commentSection = this.shadowRoot.querySelector(".comment-section");
-    const commentTextarea = commentInputContainer?.querySelector(".comment-textarea");
+    const commentInputContainer = this.shadowRoot.querySelector(".ui-card-retro-comment-input-container");
+    const commentTextarea = commentInputContainer?.querySelector(".ui-card-retro-comment-textarea");
 
     if (!commentInputContainer) {
-      console.error("Elemento 'comment-input-container' n\u00e3o encontrado.");
+      console.error("Elemento '.ui-card-retro-comment-input-container' nao encontrado.");
       return;
     }
 
-    const shouldOpen =
-      commentInputContainer.style.display === "none" ||
-      !commentInputContainer.style.display ||
-      commentSection.style.display === "none";
+    const isOpen = this.getAttribute("data-ui-card-retro-comment-panel") === "open";
+    const shouldOpen = !isOpen;
 
     if (shouldOpen) {
-      commentInputContainer.style.display = "flex";
-      commentSection.style.display = "block";
+      this.setAttribute("data-ui-card-retro-comment-panel", "open");
       if (commentTextarea) commentTextarea.focus();
     } else {
-      commentSection.style.display = "none";
-      commentInputContainer.style.display = "none";
+      this.setAttribute("data-ui-card-retro-comment-panel", "closed");
       return;
-    }
-
-    const saveCommentButton = commentInputContainer.querySelector(".save-comment-button");
-    if (saveCommentButton) {
-      saveCommentButton.onclick = () => this.saveCommentFunction(commentTextarea);
     }
 
     this.renderComments();
@@ -222,24 +221,20 @@ class UiCardRetro extends HTMLElement {
     if (!this.commentsDisplayContainer) return;
 
     this.commentsDisplayContainer.innerHTML = "";
+    this.commentsDisplayContainer.hidden = this.comments.length === 0;
 
-    if (this.comments.length === 0) {
-      this.commentsDisplayContainer.style.display = "none";
-      return;
-    }
-
-    this.commentsDisplayContainer.style.display = "block";
+    if (this.comments.length === 0) return;
 
     this.comments.forEach((comment, index) => {
       const commentElement = document.createElement("div");
-      commentElement.className = "comment";
+      commentElement.className = "ui-card-retro-comment";
 
       const commentTextElement = document.createElement("span");
-      commentTextElement.className = "comment-text";
+      commentTextElement.className = "ui-card-retro-comment-text";
       commentTextElement.textContent = comment;
 
       const deleteCommentButton = document.createElement("button");
-      deleteCommentButton.className = "delete-comment-button";
+      deleteCommentButton.className = "ui-card-retro-delete-comment-button";
       deleteCommentButton.type = "button";
       deleteCommentButton.textContent = "X";
       deleteCommentButton.setAttribute("aria-label", "Deletar comentario");
@@ -258,7 +253,6 @@ class UiCardRetro extends HTMLElement {
 
   handleEditOption() {
     this.setTextareaEditable(true);
-    this.saveButton.style.display = "inline-block";
     this.menuOpcoes.classList.remove("visible");
     this.updateUIState();
   }
@@ -269,9 +263,8 @@ class UiCardRetro extends HTMLElement {
 
   setTextareaEditable(editable) {
     this.textarea.disabled = !editable;
-    this.textarea.style.display = editable ? "block" : "none";
-    this.textDisplay.style.display = editable ? "none" : "block";
-    this.saveButton.style.display = editable ? "inline-block" : "none";
+    this.setAttribute("data-ui-card-retro-mode", editable ? "edit" : "view");
+    if (editable) this.setAttribute("data-ui-card-retro-comment-panel", "closed");
     this.updateUIState();
   }
 
@@ -309,7 +302,6 @@ class UiCardRetro extends HTMLElement {
 
   updateUIState() {
     if (this.textarea.disabled) {
-      this.cardContainer.style.backgroundColor = this.getEffectiveColor();
       this.applyEffectiveColor();
 
       if (this.likeMaterial) {
@@ -319,12 +311,9 @@ class UiCardRetro extends HTMLElement {
 
       if (this.commentMaterial) this.commentMaterial.hidden = false;
 
-      this.saveButton.style.display = "none";
       this.menuOpcoes.classList.add("visible");
       return;
     }
-
-    this.cardContainer.style.backgroundColor = "#ffffff";
 
     if (this.likeMaterial) {
       this.likeMaterial.hidden = true;
@@ -332,6 +321,7 @@ class UiCardRetro extends HTMLElement {
     }
 
     if (this.commentMaterial) this.commentMaterial.hidden = true;
+    this.menuOpcoes.classList.remove("visible");
   }
 
   updateTextDisplay() {

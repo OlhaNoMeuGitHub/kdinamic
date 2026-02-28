@@ -1,36 +1,29 @@
+import { loadCanonicalAssets } from "../_shared/load-canonical-assets.js";
+
 /**
  * @type LeafComponent
  * @contracts naming lifecycle events css-system
- * @trait leaf-stateful-intent-emitter
  */
-
-// TRAIT: leaf-stateful-intent-emitter
-// This canonical demonstrates a leaf-component trait with internal state,
-// idempotent lifecycle behavior, and intent emission to the owner.
 class UiLeafComponent extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._initialized = false;
-
     this.text = "";
     this.likes = 0;
   }
 
   async connectedCallback() {
-    // TRAIT: lifecycle-idempotent-mount
     if (!this._initialized) {
       await this.initializeOnce();
       this._initialized = true;
     }
+
     this.onConnected();
   }
 
   async initializeOnce() {
-    // TRAIT: lazy-template-hydration
-    const template = document.createElement("template");
-    template.innerHTML = `<link rel="stylesheet" href="./leaf-component.css">${html}`;
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    await loadCanonicalAssets(this, import.meta.url, "leaf-component");
 
     this._textarea = this.shadowRoot.querySelector(".ui-leaf-textarea");
     this._textDisplay = this.shadowRoot.querySelector(".ui-leaf-text-display");
@@ -41,15 +34,13 @@ class UiLeafComponent extends HTMLElement {
   }
 
   attachListenersOnce() {
-    // TRAIT: local-state-ownership
-    this._textarea?.addEventListener("input", (e) => {
-      this.text = e.target.value;
+    this._textarea?.addEventListener("input", (event) => {
+      this.text = event.target.value;
       this.onConnected();
     });
 
-    // TRAIT: intent-event-emitter
     this._likeButton?.addEventListener("click", () => {
-      this.likes++;
+      this.likes += 1;
       this.dispatchEvent(new CustomEvent("ui-leaf:like", { bubbles: true, composed: true }));
       this.onConnected();
     });
@@ -66,4 +57,6 @@ class UiLeafComponent extends HTMLElement {
   }
 }
 
-customElements.define("ui-leaf-component", UiLeafComponent);
+if (!customElements.get("ui-leaf-component")) {
+  customElements.define("ui-leaf-component", UiLeafComponent);
+}

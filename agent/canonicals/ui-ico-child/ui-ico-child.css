@@ -1,68 +1,75 @@
 :host {
   display: block;
 
-  --ui-ico-child-border: #ddd;
-  --ui-ico-child-radius: 10px;
-  --ui-ico-child-bg: #fff;
-  --ui-ico-child-surface: #fafafa;
+  --ui-ico-child-border: #d5d1c5;
+  --ui-ico-child-surface: #fffdf7;
+  --ui-ico-child-accent: #214f4b;
+  --ui-ico-child-muted: #6f6a5d;
+  --ui-ico-child-danger: #9a3d2e;
+  --ui-ico-child-radius: 14px;
 }
 
 .ui-ico-child-root {
-  width: 260px;
+  width: 280px;
+  min-width: 0;
+  box-sizing: border-box;
   border: 1px solid var(--ui-ico-child-border);
   border-radius: var(--ui-ico-child-radius);
-  background: var(--ui-ico-child-bg);
-  padding: 10px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 88%), rgb(255 253 247 / 92%)),
+    var(--ui-ico-child-surface);
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  box-sizing: border-box;
+  gap: 12px;
 }
 
 .ui-ico-child-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ui-ico-child-heading {
+  min-width: 0;
 }
 
 .ui-ico-child-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
+  color: var(--ui-ico-child-accent);
+}
+
+.ui-ico-child-meta {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ui-ico-child-muted);
 }
 
 .ui-ico-child-delete {
+  border: 1px solid color-mix(in srgb, var(--ui-ico-child-danger) 50%, white);
+  border-radius: 999px;
+  background: white;
+  color: var(--ui-ico-child-danger);
+  padding: 6px 10px;
   cursor: pointer;
-  border: 1px solid var(--ui-ico-child-border);
-  border-radius: 6px;
-  padding: 4px 8px;
-  background: #fff;
 }
 
-.ui-ico-child-dropzone {
+.ui-ico-child-sync {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ui-ico-child-muted);
+}
+
+.ui-ico-child-items {
+  margin: 0;
+  padding-left: 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-height: 40px;
-  padding: 8px;
-  border: 1px dashed #ccc;
-  border-radius: 8px;
+  gap: 6px;
 }
 
-/* Internal draggable items (allowed) */
-.ui-ico-child-item-shell {
-  padding: 8px;
-  border: 1px solid var(--ui-ico-child-border);
-  border-radius: 8px;
-  background: var(--ui-ico-child-surface);
-  cursor: grab;
-  user-select: none;
-}
-
-.ui-ico-child-item-shell:active {
-  cursor: grabbing;
-}
-
-.ui-ico-child-dragging-item {
-  opacity: 0.6;
+.ui-ico-child-item {
+  color: #2a241a;
 }

@@ -5,3 +5,4 @@
 - use CSS variables (tokens)
 - no inline styles
 - state via attributes
+- use the rules of agent/contracts/style/*

@@ -1,249 +1,316 @@
-/* /componentes/card-retro.css */
+/* componentes/ui-card-retro/ui-card-retro.css */
 :host {
-    --ui-card-retro-delete-comment-size: 24px;
-    --ui-card-retro-delete-comment-color: #666666;
-    --ui-card-retro-delete-comment-hover-color: #111111;
-    --ui-card-retro-delete-comment-hover-bg: rgba(0, 0, 0, 0.08);
+  --ui-card-retro-radius: 8px;
+  --ui-card-retro-border-color: #dddddd;
+  --ui-card-retro-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --ui-card-retro-gap: 10px;
+  --ui-card-retro-padding-inline: 10px;
+  --ui-card-retro-padding-block: 2px;
+  --ui-card-retro-text-size: 14px;
+  --ui-card-retro-text-line-height: 1.5;
+
+  --ui-card-retro-bg-default: #f9f9f9;
+  --ui-card-retro-bg-edit: #ffffff;
+  --ui-card-retro-bg-lavanda: #e6e6fa;
+  --ui-card-retro-bg-salmao: #ffdab9;
+  --ui-card-retro-bg-menta: #f5fffa;
+  --ui-card-retro-bg-ceu-azul: #b0e0e6;
+  --ui-card-retro-bg-amarelo-pastel: #fffacd;
+
+  --ui-card-retro-save-bg: #74b9ff;
+  --ui-card-retro-save-bg-hover: #0056b3;
+  --ui-card-retro-save-bg-active: #149174;
+  --ui-card-retro-save-fg: #ffffff;
+
+  --ui-card-retro-delete-comment-size: 24px;
+  --ui-card-retro-delete-comment-color: #666666;
+  --ui-card-retro-delete-comment-hover-color: #111111;
+  --ui-card-retro-delete-comment-hover-bg: rgba(0, 0, 0, 0.08);
+
+  --ui-card-retro-comment-input-bg: rgba(255, 255, 255, 0.7);
+  --ui-card-retro-comment-input-border: rgba(0, 0, 0, 0.2);
+  --ui-card-retro-divider: rgba(0, 0, 0, 0.1);
+
+  --ui-card-retro-effective-bg: var(--ui-card-retro-bg-default);
+
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
 }
 
-.card-container {
-    width: 100%;
-    max-width: 500px;
-    /* background-color: #f9f9f9; */
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 2px 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    box-sizing: border-box;
-    transition: background-color 0.3s ease;
+:host([data-ui-card-retro-effective-color="lavanda"]) {
+  --ui-card-retro-effective-bg: var(--ui-card-retro-bg-lavanda);
 }
 
-/* Card branco quando o textarea eh editavel */
-.textarea-container:not(:disabled) ~ .card-container {
-    background-color: #33b172;
+:host([data-ui-card-retro-effective-color="salmao"]) {
+  --ui-card-retro-effective-bg: var(--ui-card-retro-bg-salmao);
 }
 
-
-/* Card branco quando o textarea eh editavel */
-.textarea-container:disabled ~ .card-container {
-    background-color: #a82c2c;
+:host([data-ui-card-retro-effective-color="menta"]) {
+  --ui-card-retro-effective-bg: var(--ui-card-retro-bg-menta);
 }
 
-.textarea-container {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    position: relative;
-    border: none; /* Remove a borda */
-    padding: 0 5px; /* Padding apenas nas laterais (esquerda e direita) */
+:host([data-ui-card-retro-effective-color="ceu-azul"]) {
+  --ui-card-retro-effective-bg: var(--ui-card-retro-bg-ceu-azul);
 }
 
-
-/* Estilo do textarea */
-.card-textarea {
-    flex: 1;
-    padding: 8px;
-    border: none;
-    font-size: 14px;
-    resize: none;
-    overflow: hidden;
-    box-sizing: border-box;
-    background-color: #ffffff;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-    outline: none;
+:host([data-ui-card-retro-effective-color="amarelo-pastel"]) {
+  --ui-card-retro-effective-bg: var(--ui-card-retro-bg-amarelo-pastel);
 }
 
-.text-display {
-    width: 100%;
-    padding: 8px;
-    font-size: 14px;
-    line-height: 1.5;
-    background-color: inherit; /* Herdar a cor de fundo do container */
-    border: none; /* Remove a borda */
-    white-space: pre-wrap; /* Respeita as quebras de linha */
+:host([data-ui-card-retro-mode="edit"]) {
+  --ui-card-retro-effective-bg: var(--ui-card-retro-bg-edit);
 }
 
-/* Textarea bloqueado */
-.card-textarea:disabled {
-    background-color: #f9f9f9;
-    border-color: #f9f9f9;
+.ui-card-retro-container {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  border: 1px solid var(--ui-card-retro-border-color);
+  border-radius: var(--ui-card-retro-radius);
+  padding: var(--ui-card-retro-padding-block) var(--ui-card-retro-padding-inline);
+  box-shadow: var(--ui-card-retro-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-card-retro-gap);
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
+  background-color: var(--ui-card-retro-effective-bg);
 }
 
-/* Ocultar menu-opcoes e card-actions quando textarea eh editavel */
-.card-textarea:not(:disabled) ~ .menu-opcoes,
-.card-textarea:not(:disabled) ~ .card-actions {
-    display: none;
+.ui-card-retro-textarea-container {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ui-card-retro-gap);
+  min-inline-size: 0;
+  position: relative;
+  padding: 0 5px;
+  box-sizing: border-box;
 }
 
-/* Exibir menu-opcoes e card-actions quando textarea esta bloqueado */
-.card-textarea:disabled ~ .menu-opcoes,
-.card-textarea:disabled ~ .card-actions {
-    display: flex;
+.ui-card-retro-textarea {
+  display: block;
+  flex: 1 1 auto;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  padding: 8px;
+  border: none;
+  font-size: var(--ui-card-retro-text-size);
+  resize: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  background-color: transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  outline: none;
 }
 
-/* Ocultar menu-opcoes e card-actions quando textarea eh editavel */
-
-
-.menu-opcoes {
-    position: absolute;
-    right: 0;
-    top: 0;
-    background-color: inherit;
-    border: none;
-    border-radius: 4px;
-    padding: 5px;
-    box-shadow: none;
-    flex-shrink: 0;
+.ui-card-retro-textarea:disabled {
+  border-color: transparent;
 }
 
-.card-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 5px;
-    justify-content: flex-end;
+.ui-card-retro-text-display {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  padding: 8px;
+  font-size: var(--ui-card-retro-text-size);
+  line-height: var(--ui-card-retro-text-line-height);
+  background-color: inherit;
+  border: none;
+  box-sizing: border-box;
+
+  /* Text mode P: preserve newlines, wrap safely */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.like-material {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-.comment-material {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+:host([data-ui-card-retro-mode="view"]) .ui-card-retro-textarea {
+  display: none;
 }
 
-
-.save-button {
-    background-color: #74b9ff;
-    color: white;
-    padding: 5px 10px;
-    font-size: 14px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+:host([data-ui-card-retro-mode="edit"]) .ui-card-retro-text-display {
+  display: none;
 }
 
-
-
-
-.comment-textarea {
-    width: 100%; /* Define a largura do textarea como menor */
-    padding: 3px 3px;
-    font-size: 14px;
-    border: none;
-    background-color: transparent;
-    resize: none;
-    box-sizing: border-box;
-    overflow: hidden;
-    outline: none;
-    transition: height 0.2s ease; /* Animacao suave ao ajustar a altura */
+.ui-card-retro-menu {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background-color: inherit;
+  border: none;
+  border-radius: 4px;
+  padding: 5px;
+  box-shadow: none;
+  flex-shrink: 0;
 }
 
-.comment-textarea:focus {
-    outline: none;
-    border: none;
+:host([data-ui-card-retro-mode="edit"]) .ui-card-retro-menu {
+  display: none;
 }
 
-.save-comment-button {
-    margin: 5px; /* Adiciona espaco entre textarea e botao */
-    background-color: #74b9ff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
+.ui-card-retro-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-inline-size: 0;
 }
 
-
-.save-comment-button:hover {
-    background-color: #0056b3;
+.ui-card-retro-like,
+.ui-card-retro-comment-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
-
-.save-comment-button:active {
-    background-color: #149174; /* Fundo ainda mais escuro ao clicar */
-    transform: scale(0.95); /* Botao encolhe ligeiramente ao clicar */
+.ui-card-retro-save-button {
+  display: none;
+  background-color: var(--ui-card-retro-save-bg);
+  color: var(--ui-card-retro-save-fg);
+  padding: 5px 10px;
+  font-size: var(--ui-card-retro-text-size);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.save-comment-button svg {
-    fill: #fff; /* Cor do icone */
-    width: 24px; /* Tamanho do icone */
-    height: 24px; /* Tamanho do icone */
-}
-.comments-display-container {
-    width: 100%;
-    max-width: 100%; /* Garante que o container respeite a largura do pai */
-    box-sizing: border-box;
-    overflow-wrap: break-word; /* Quebra palavras longas automaticamente */
-    word-wrap: break-word; /* Compatibilidade com navegadores antigos */
-    word-break: break-word; /* Quebra o texto quando necessario */
-    white-space: normal; /* Permite que o texto quebre para a proxima linha */
+.ui-card-retro-save-button:hover {
+  background-color: var(--ui-card-retro-save-bg-hover);
 }
 
-.comment {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 8px;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1); /* Linha divisoria ligeiramente mais escura */
-    background-color: inherit; /* Herda o fundo do card */
+.ui-card-retro-save-button:active {
+  background-color: var(--ui-card-retro-save-bg-active);
+  transform: scale(0.95);
 }
 
-.comment:first-child {
-    border-top: none; /* Remove a linha divisoria para o primeiro comentario */
+:host([data-ui-card-retro-mode="edit"]) .ui-card-retro-save-button {
+  display: inline-block;
 }
 
-.comment-text {
-    flex: 1;
-    min-width: 0;
-    line-height: 1.5; /* Melhora a legibilidade */
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    white-space: normal;
+.ui-card-retro-comment-section {
+  min-inline-size: 0;
 }
 
-.delete-comment-button {
-    flex: 0 0 auto;
-    margin-left: auto;
-    width: var(--ui-card-retro-delete-comment-size);
-    height: var(--ui-card-retro-delete-comment-size);
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--ui-card-retro-delete-comment-color);
-    font-size: 14px;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0;
+:host([data-ui-card-retro-comment-panel="closed"]) .ui-card-retro-comment-section {
+  display: none;
 }
 
-.delete-comment-button:hover {
-    background-color: var(--ui-card-retro-delete-comment-hover-bg);
-    color: var(--ui-card-retro-delete-comment-hover-color);
+:host([data-ui-card-retro-comment-panel="open"]) .ui-card-retro-comment-section {
+  display: block;
 }
 
-
-.comment-input-container {
-    display: flex;
-    background-color: rgba(255, 255, 255, 0.7); /* Cor de fundo mais clara que o card */
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-
-    flex-direction: column; /* Organiza textarea e botao verticalmente */
-    align-items: flex-end; /* Centraliza horizontalmente */
-    margin: 20px auto; /* Adiciona espacamento e centraliza horizontalmente */
-    width: 100%; /* Garante que o container ocupe toda a largura */
+.ui-card-retro-comment-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin: 20px auto;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  background-color: var(--ui-card-retro-comment-input-bg);
+  border: 1px solid var(--ui-card-retro-comment-input-border);
+  border-radius: 4px;
+  padding: 4px;
 }
 
+.ui-card-retro-comment-textarea {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 72px;
+  padding: 3px;
+  font-size: var(--ui-card-retro-text-size);
+  border: none;
+  background-color: transparent;
+  resize: vertical;
+  overflow: auto;
+  box-sizing: border-box;
+  outline: none;
+}
 
+.ui-card-retro-comment-save-button {
+  margin: 5px;
+  background-color: var(--ui-card-retro-save-bg);
+  color: var(--ui-card-retro-save-fg);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: var(--ui-card-retro-text-size);
+  transition: background-color 0.3s ease;
+}
 
+.ui-card-retro-comment-save-button:hover {
+  background-color: var(--ui-card-retro-save-bg-hover);
+}
+
+.ui-card-retro-comment-save-button:active {
+  background-color: var(--ui-card-retro-save-bg-active);
+  transform: scale(0.95);
+}
+
+.ui-card-retro-comment-save-button svg {
+  fill: var(--ui-card-retro-save-fg);
+  width: 24px;
+  height: 24px;
+}
+
+.ui-card-retro-comments-list {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.ui-card-retro-comment {
+  inline-size: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border-top: 1px solid var(--ui-card-retro-divider);
+  background-color: inherit;
+}
+
+.ui-card-retro-comment:first-child {
+  border-top: none;
+}
+
+.ui-card-retro-comment-text {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  line-height: var(--ui-card-retro-text-line-height);
+
+  /* Text mode B: body wrap */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ui-card-retro-delete-comment-button {
+  flex: 0 0 auto;
+  margin-left: auto;
+  width: var(--ui-card-retro-delete-comment-size);
+  height: var(--ui-card-retro-delete-comment-size);
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ui-card-retro-delete-comment-color);
+  font-size: var(--ui-card-retro-text-size);
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ui-card-retro-delete-comment-button:hover {
+  background-color: var(--ui-card-retro-delete-comment-hover-bg);
+  color: var(--ui-card-retro-delete-comment-hover-color);
+}

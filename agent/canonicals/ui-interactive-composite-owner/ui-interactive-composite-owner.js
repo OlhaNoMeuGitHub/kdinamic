@@ -1,210 +1,261 @@
-import { loadComponentAssets, loadComponentIfNotExists } from "../../utils.js";
+import { loadCanonicalAssets } from "../_shared/load-canonical-assets.js";
+import "../ui-ico-child/ui-ico-child.js";
+import { createUiInteractiveCompositeOwnerModule } from "./ui-interactive-composite-owner.module.js";
+import { createUiInteractiveCompositeOwnerService } from "./ui-interactive-composite-owner.service.js";
+import { createUiInteractiveCompositeOwnerStore } from "./ui-interactive-composite-owner.store.js";
 
-/**
- * Canonical: InteractiveCompositeOwner
- *
- * @type InteractiveCompositeOwner
- * @contracts naming lifecycle events css-system drag-system layout-scroll
- * @trait interactive-shell-orchestrator
- * @trait cross-child-dropzone-orchestrator
- *
- * Demonstrates:
- * - parent owns shells (reorder/movement)
- * - handle drag for shells (host never draggable)
- * - cross-child item drag orchestrated by parent
- * - child exposes drop zone API (getDropZone)
- * - intent events bubble + composed
- */
-// TRAIT: interactive-shell-orchestrator
-// This canonical represents an interactive-owner trait that controls
-// structure, handle-based reordering, and child intents.
 class UiInteractiveCompositeOwner extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._initialized = false;
-
-    // --- drag state: shells (children)
+    this._unsubscribeStore = null;
+    this._shellById = new Map();
     this._draggingShell = null;
     this._shellPlaceholder = null;
+    this._store = null;
+    this._service = null;
+    this._module = null;
+    this._ownsModule = false;
+  }
 
-    // --- drag state: items across children
-    this._draggingItemShell = null;
-    this._itemPlaceholder = null;
-    this._activeDropZone = null;
+  set store(value) {
+    this._store = value;
+    this.bindStore();
+  }
+
+  set service(value) {
+    this._service = value;
+  }
+
+  set module(value) {
+    this._module = value;
   }
 
   async connectedCallback() {
-    // TRAIT: lifecycle-idempotent-mount
     if (!this._initialized) {
       await this.initializeOnce();
       this._initialized = true;
     }
-    this.onConnected();
+
+    this.ensureDependencies();
+    this.bindStore();
+    this._module?.start();
+  }
+
+  disconnectedCallback() {
+    this._unsubscribeStore?.();
+    this._unsubscribeStore = null;
+
+    if (this._ownsModule) {
+      this._module?.dispose?.();
+    }
   }
 
   async initializeOnce() {
-    // TRAIT: owner-asset-bootstrap
-    await loadComponentAssets(this, "ui-interactive-composite-owner");
-    await loadComponentIfNotExists("ui-ico-child");
+    await loadCanonicalAssets(this, import.meta.url, "ui-interactive-composite-owner");
 
-    this._btnAdd = this.shadowRoot.querySelector("#ui-interactive-composite-owner-add-child");
     this._board = this.shadowRoot.querySelector("#ui-interactive-composite-owner-board");
+    this._status = this.shadowRoot.querySelector("#ui-interactive-composite-owner-status");
+    this._reason = this.shadowRoot.querySelector("#ui-interactive-composite-owner-reason");
+    this._updated = this.shadowRoot.querySelector("#ui-interactive-composite-owner-updated");
+    this._btnAdd = this.shadowRoot.querySelector("#ui-interactive-composite-owner-add-child");
+    this._btnRefresh = this.shadowRoot.querySelector("#ui-interactive-composite-owner-refresh");
 
-    this._btnAdd?.addEventListener("click", () => this.createChildShell());
+    this._btnAdd?.addEventListener("click", () => {
+      void this._module?.createColumn().catch(() => {});
+    });
 
-    // Owner listens at stable boundary
-    this._board?.addEventListener("dragstart", (e) => this.handleAnyDragStart(e));
-    this._board?.addEventListener("dragover", (e) => this.handleAnyDragOver(e));
-    this._board?.addEventListener("drop", (e) => this.handleAnyDrop(e));
-    this._board?.addEventListener("dragend", () => this.handleAnyDragEnd());
+    this._btnRefresh?.addEventListener("click", () => {
+      void this._module?.pollNow({ reason: "manual-refresh" }).catch(() => {});
+    });
 
-    // Example intent from children (delete)
-    // Example intent from children (delete)
-    // Listen at the highest stable boundary: the host element
-    this.addEventListener("ui-ico-child:delete", (e) => this.handleChildDelete(e));
+    this.addEventListener("ui-ico-child:delete", (event) => {
+      const columnId = event.detail?.columnId;
+      if (!columnId) {
+        return;
+      }
+
+      void this._module?.deleteColumn({ columnId }).catch(() => {});
+    });
+
+    this._board?.addEventListener("dragstart", (event) => this.handleDragStart(event));
+    this._board?.addEventListener("dragover", (event) => this.handleDragOver(event));
+    this._board?.addEventListener("drop", (event) => this.handleDrop(event));
+    this._board?.addEventListener("dragend", () => this.cleanupDrag());
   }
 
-  onConnected() {
-    // idempotent; sync state → UI here if you add state
+  ensureDependencies() {
+    if (!this._store) {
+      this._store = createUiInteractiveCompositeOwnerStore();
+    }
+
+    if (!this._service) {
+      this._service = createUiInteractiveCompositeOwnerService({ mode: "mock" });
+    }
+
+    if (!this._module) {
+      this._module = createUiInteractiveCompositeOwnerModule({
+        store: this._store,
+        service: this._service,
+      });
+      this._ownsModule = true;
+    }
   }
 
-  // ------------------------------------------------------------
-  // Parent-owned shells
-  // ------------------------------------------------------------
-  createChildShell() {
-    // TRAIT: parent-owned-shell-creation
-    if (!this._board) return;
+  bindStore() {
+    if (!this.isConnected || !this._initialized || !this._store?.subscribe) {
+      return;
+    }
 
+    this._unsubscribeStore?.();
+    this._unsubscribeStore = this._store.subscribe((state) => this.renderFromState(state));
+  }
+
+  renderFromState(state) {
+    if (!this._initialized) {
+      return;
+    }
+
+    if (this._status) {
+      this._status.textContent = `${state.sync.status}${state.sync.paused ? " (paused)" : ""}`;
+    }
+
+    if (this._reason) {
+      this._reason.textContent = `Reason: ${state.sync.lastReason || "unknown"}`;
+    }
+
+    if (this._updated) {
+      this._updated.textContent = `Updated: ${
+        state.sync.lastUpdatedAt ? new Date(state.sync.lastUpdatedAt).toLocaleTimeString() : "never"
+      }`;
+    }
+
+    this.syncShells(state.columns);
+  }
+
+  syncShells(columns) {
+    if (!this._board) {
+      return;
+    }
+
+    const desiredIds = new Set(columns.map((column) => column.id));
+
+    for (const [columnId, shell] of this._shellById.entries()) {
+      if (!desiredIds.has(columnId)) {
+        shell.remove();
+        this._shellById.delete(columnId);
+      }
+    }
+
+    columns.forEach((column) => {
+      let shell = this._shellById.get(column.id);
+      if (!shell) {
+        shell = this.createChildShell(column.id);
+        this._shellById.set(column.id, shell);
+      }
+
+      shell.dataset.columnId = column.id;
+
+      const child = shell.querySelector("ui-ico-child");
+      if (child) {
+        child.store = this._store;
+        child.columnId = column.id;
+      }
+
+      this._board.appendChild(shell);
+    });
+  }
+
+  createChildShell(columnId) {
     const shell = document.createElement("div");
     shell.className = "ui-interactive-composite-owner-shell";
+    shell.dataset.columnId = columnId;
 
     const handle = document.createElement("span");
     handle.className = "ui-interactive-composite-owner-handle";
-    handle.textContent = "⋮⋮";
-    handle.setAttribute("draggable", "true");
+    handle.textContent = "::::";
     handle.title = "Move shell";
+    handle.setAttribute("draggable", "true");
 
     const child = document.createElement("ui-ico-child");
+    child.store = this._store;
+    child.columnId = columnId;
 
-    shell.appendChild(handle);
-    shell.appendChild(child);
-    this._board.appendChild(shell);
-
-    // Seed example items in child's drop zone (internal shells are draggable)
-    const dropZone = child.getDropZone?.();
-    if (!dropZone) return;
-
-    dropZone.appendChild(this.createItemShell("Item A"));
-    dropZone.appendChild(this.createItemShell("Item B"));
-  }
-
-  handleChildDelete(event) {
-    const child = event.detail?.child;
-    if (!child) return;
-    const shell = child.closest(".ui-interactive-composite-owner-shell");
-    shell?.remove();
-  }
-
-  // ------------------------------------------------------------
-  // Item shells (internal): may be draggable
-  // ------------------------------------------------------------
-  createItemShell(label) {
-    const shell = document.createElement("div");
-    shell.className = "ui-ico-child-item-shell";
-    shell.setAttribute("draggable", "true");
-    shell.textContent = label;
+    shell.append(handle, child);
     return shell;
   }
 
-  // ------------------------------------------------------------
-  // Drag dispatcher
-  // ------------------------------------------------------------
-  // TRAIT: drag-intent-dispatcher
-  handleAnyDragStart(event) {
-    const handle = event.target?.closest?.(".ui-interactive-composite-owner-handle");
-    if (handle) {
-      this.handleShellDragStart(event, handle);
-      return;
-    }
-
-    const itemShell = this.findInComposedPath(event, (el) =>
-      el?.classList?.contains?.("ui-ico-child-item-shell")
-    );
-    if (itemShell) {
-      this.handleItemDragStart(event, itemShell);
-      return;
-    }
-  }
-
-  handleAnyDragOver(event) {
-    if (this._draggingItemShell) return this.handleItemDragOver(event);
-    if (this._draggingShell) return this.handleShellDragOver(event);
-  }
-
-  handleAnyDrop(event) {
-    if (this._draggingItemShell) return this.handleItemDrop(event);
-    if (this._draggingShell) return this.handleShellDrop(event);
-  }
-
-  handleAnyDragEnd() {
-    this.handleShellDragEnd();
-    this.handleItemDragEnd();
-  }
-
-  // ------------------------------------------------------------
-  // Shell drag (reorder children)
-  // ------------------------------------------------------------
   ensureShellPlaceholder() {
-    if (this._shellPlaceholder) return this._shellPlaceholder;
-    const ph = document.createElement("div");
-    ph.className = "ui-interactive-composite-owner-shell-placeholder";
-    this._shellPlaceholder = ph;
-    return ph;
+    if (this._shellPlaceholder) {
+      return this._shellPlaceholder;
+    }
+
+    const placeholder = document.createElement("div");
+    placeholder.className = "ui-interactive-composite-owner-shell-placeholder";
+    this._shellPlaceholder = placeholder;
+    return placeholder;
   }
 
-  // TRAIT: handle-only-shell-drag
-  handleShellDragStart(event, handleEl) {
-    const shell = handleEl.closest(".ui-interactive-composite-owner-shell");
-    if (!shell) return;
+  handleDragStart(event) {
+    const handle = event.target?.closest?.(".ui-interactive-composite-owner-handle");
+    if (!handle) {
+      return;
+    }
+
+    const shell = handle.closest(".ui-interactive-composite-owner-shell");
+    if (!shell) {
+      return;
+    }
 
     this._draggingShell = shell;
     shell.classList.add("ui-interactive-composite-owner-dragging-shell");
 
     event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", "");
+    event.dataTransfer.setData("text/plain", shell.dataset.columnId || "");
   }
 
-  handleShellDragOver(event) {
-    if (!this._draggingShell || !this._board) return;
-    event.preventDefault();
+  handleDragOver(event) {
+    if (!this._draggingShell || !this._board) {
+      return;
+    }
 
+    event.preventDefault();
     const placeholder = this.ensureShellPlaceholder();
-    const afterEl = this.getDragAfterShell(this._board, event.clientX);
+    const afterElement = this.getDragAfterShell(this._board, event.clientX);
 
-    if (afterEl == null) this._board.appendChild(placeholder);
-    else this._board.insertBefore(placeholder, afterEl);
+    if (afterElement) {
+      this._board.insertBefore(placeholder, afterElement);
+      return;
+    }
+
+    this._board.appendChild(placeholder);
   }
 
-  handleShellDrop(event) {
-    if (!this._draggingShell || !this._board) return;
+  handleDrop(event) {
+    if (!this._draggingShell || !this._board) {
+      return;
+    }
+
     event.preventDefault();
 
-    const placeholder = this._shellPlaceholder;
-    if (placeholder && placeholder.parentNode === this._board) {
-      this._board.insertBefore(this._draggingShell, placeholder);
-      placeholder.remove();
+    if (this._shellPlaceholder?.parentNode === this._board) {
+      this._board.insertBefore(this._draggingShell, this._shellPlaceholder);
     }
 
-    this._draggingShell.classList.remove("ui-interactive-composite-owner-dragging-shell");
-    this._draggingShell = null;
+    const orderedIds = [...this._board.querySelectorAll(".ui-interactive-composite-owner-shell")]
+      .map((shell) => shell.dataset.columnId)
+      .filter(Boolean);
+
+    void this._module
+      ?.reorderColumns({ orderedIds })
+      .catch(() => {})
+      .finally(() => this.cleanupDrag());
   }
 
-  handleShellDragEnd() {
-    if (this._draggingShell) {
-      this._draggingShell.classList.remove("ui-interactive-composite-owner-dragging-shell");
-      this._draggingShell = null;
-    }
+  cleanupDrag() {
+    this._draggingShell?.classList.remove("ui-interactive-composite-owner-dragging-shell");
+    this._draggingShell = null;
     this._shellPlaceholder?.remove();
   }
 
@@ -219,103 +270,16 @@ class UiInteractiveCompositeOwner extends HTMLElement {
       (closest, shell) => {
         const box = shell.getBoundingClientRect();
         const offset = x - (box.left + box.width / 2);
-        if (offset < 0 && offset > closest.offset) return { offset, element: shell };
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: shell };
+        }
         return closest;
       },
       { offset: Number.NEGATIVE_INFINITY, element: null }
     ).element;
-  }
-
-  // ------------------------------------------------------------
-  // Item drag (cross-child)
-  // ------------------------------------------------------------
-  ensureItemPlaceholder() {
-    if (this._itemPlaceholder) return this._itemPlaceholder;
-    const ph = document.createElement("div");
-    ph.className = "ui-interactive-composite-owner-item-placeholder";
-    this._itemPlaceholder = ph;
-    return ph;
-  }
-
-  handleItemDragStart(event, itemShell) {
-    this._draggingItemShell = itemShell;
-    itemShell.classList.add("ui-ico-child-dragging-item");
-
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", "");
-  }
-
-  // TRAIT: cross-child-dropzone-orchestrator
-  handleItemDragOver(event) {
-    event.preventDefault();
-    if (!this._draggingItemShell) return;
-
-    const child = this.findInComposedPath(event, (el) => el?.tagName === "UI-ICO-CHILD");
-    if (!child) return;
-
-    const dropZone = child.getDropZone?.();
-    if (!dropZone) return;
-
-    this._activeDropZone = dropZone;
-
-    const placeholder = this.ensureItemPlaceholder();
-    const afterEl = this.getDragAfterItem(dropZone, event.clientY);
-
-    if (afterEl == null) dropZone.appendChild(placeholder);
-    else dropZone.insertBefore(placeholder, afterEl);
-  }
-
-  handleItemDrop(event) {
-    event.preventDefault();
-    if (!this._draggingItemShell) return;
-
-    const dropZone = this._activeDropZone;
-    const placeholder = this._itemPlaceholder;
-
-    if (dropZone && placeholder && placeholder.parentNode === dropZone) {
-      dropZone.insertBefore(this._draggingItemShell, placeholder);
-      placeholder.remove();
-    }
-
-    this._draggingItemShell.classList.remove("ui-ico-child-dragging-item");
-    this._draggingItemShell = null;
-    this._activeDropZone = null;
-  }
-
-  handleItemDragEnd() {
-    if (this._draggingItemShell) {
-      this._draggingItemShell.classList.remove("ui-ico-child-dragging-item");
-      this._draggingItemShell = null;
-    }
-    this._itemPlaceholder?.remove();
-    this._activeDropZone = null;
-  }
-
-  getDragAfterItem(dropZone, y) {
-    const items = [
-      ...dropZone.querySelectorAll(
-        ".ui-ico-child-item-shell:not(.ui-ico-child-dragging-item)"
-      ),
-    ];
-
-    return items.reduce(
-      (closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - (box.top + box.height / 2);
-        if (offset < 0 && offset > closest.offset) return { offset, element: child };
-        return closest;
-      },
-      { offset: Number.NEGATIVE_INFINITY, element: null }
-    ).element;
-  }
-
-  findInComposedPath(event, predicate) {
-    const path = event.composedPath?.() || [];
-    for (const el of path) {
-      if (predicate(el)) return el;
-    }
-    return null;
   }
 }
 
-customElements.define("ui-interactive-composite-owner", UiInteractiveCompositeOwner);
+if (!customElements.get("ui-interactive-composite-owner")) {
+  customElements.define("ui-interactive-composite-owner", UiInteractiveCompositeOwner);
+}

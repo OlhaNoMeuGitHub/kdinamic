@@ -1,13 +1,34 @@
 <div class="ui-interactive-composite-owner-root">
   <div class="ui-interactive-composite-owner-header">
-    <h1 class="ui-interactive-composite-owner-title">Interactive Composite Owner</h1>
-    <button
-      id="ui-interactive-composite-owner-add-child"
-      class="ui-interactive-composite-owner-add-child-button"
-      type="button"
-    >
-      Add child
-    </button>
+    <div class="ui-interactive-composite-owner-heading">
+      <p class="ui-interactive-composite-owner-eyebrow">State + Service + Module</p>
+      <h1 class="ui-interactive-composite-owner-title">Interactive Composite Owner</h1>
+      <p id="ui-interactive-composite-owner-status" class="ui-interactive-composite-owner-status">
+        idle
+      </p>
+    </div>
+
+    <div class="ui-interactive-composite-owner-actions">
+      <button
+        id="ui-interactive-composite-owner-refresh"
+        class="ui-interactive-composite-owner-button"
+        type="button"
+      >
+        Refresh
+      </button>
+      <button
+        id="ui-interactive-composite-owner-add-child"
+        class="ui-interactive-composite-owner-button"
+        type="button"
+      >
+        Add child
+      </button>
+    </div>
+  </div>
+
+  <div class="ui-interactive-composite-owner-meta">
+    <span id="ui-interactive-composite-owner-reason">Reason: bootstrap</span>
+    <span id="ui-interactive-composite-owner-updated">Updated: never</span>
   </div>
 
   <div
