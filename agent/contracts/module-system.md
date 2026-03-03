@@ -26,3 +26,10 @@ Wiring rules:
 - inject store and services into the module
 - inject store and module into UI at the composition root or owner bootstrap
 - owner receives intent events, translates them into module/store commands, and applies structural changes when needed
+
+Filesystem layout:
+- module implementation must live in a dedicated `modules/` sibling folder, not inside the component folder
+- preferred path pattern: `modules/<owner-name>/<owner-name>.module.js`
+- example sibling layout:
+  - `componentes/ui-board-gallery/ui-board-gallery.js`
+  - `modules/ui-board-gallery/ui-board-gallery.module.js`

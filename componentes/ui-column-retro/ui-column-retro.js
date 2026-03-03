@@ -3,7 +3,7 @@ import {
   loadComponentIfNotExists,
   loadMaterialsIfNotExists,
 } from "../../utils.js";
-import { selectColumnById } from "../ui-board-gallery/ui-board-gallery.store.js";
+import { selectColumnById } from "../../stores/ui-board-gallery/ui-board-gallery.store.js";
 
 class UiColumnRetro extends HTMLElement {
   constructor() {

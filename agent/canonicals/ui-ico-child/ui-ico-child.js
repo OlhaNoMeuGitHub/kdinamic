@@ -1,5 +1,5 @@
 import { loadCanonicalAssets } from "../_shared/load-canonical-assets.js";
-import { selectColumnById } from "../ui-interactive-composite-owner/ui-interactive-composite-owner.store.js";
+import { selectColumnById } from "../ui-interactive-composite-owner/stores/ui-interactive-composite-owner/ui-interactive-composite-owner.store.js";
 
 class UiIcoChild extends HTMLElement {
   constructor() {

@@ -1,7 +1,7 @@
 import { loadComponentAssets, loadComponentIfNotExists } from "../../utils.js";
-import { createUiBoardGalleryModule } from "./ui-board-gallery.module.js";
-import { createUiBoardGalleryService } from "./ui-board-gallery.service.js";
-import { createUiBoardGalleryStore } from "./ui-board-gallery.store.js";
+import { createUiBoardGalleryModule } from "../../modules/ui-board-gallery/ui-board-gallery.module.js";
+import { createUiBoardGalleryService } from "../../services/ui-board-gallery/ui-board-gallery.service.js";
+import { createUiBoardGalleryStore } from "../../stores/ui-board-gallery/ui-board-gallery.store.js";
 
 function createDefaultMetadata() {
   return {

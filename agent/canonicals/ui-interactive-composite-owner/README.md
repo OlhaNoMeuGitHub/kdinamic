@@ -2,21 +2,25 @@
 
 This canonical demonstrates the full layered pattern for static front-end with Shadow Components:
 
-- `ui-interactive-composite-owner.store.js`
-  - observable store
-  - single source of truth for shared board data
-- `ui-interactive-composite-owner.service.js`
-  - pure mock/fetch service contract
-  - no DOM access
-- `ui-interactive-composite-owner.module.js`
-  - polling, single-flight, backoff, cancellation, page visibility pause/resume
-  - dependency injection between UI, store, and service
-- `ui-interactive-composite-owner.js`
+- `components/ui-interactive-composite-owner/ui-interactive-composite-owner.js`
   - owner subscribes to store
   - owner handles child intents and structural DOM changes
+- `stores/ui-interactive-composite-owner/ui-interactive-composite-owner.store.js`
+  - observable store
+  - single source of truth for shared board data
+- `services/ui-interactive-composite-owner/ui-interactive-composite-owner.service.js`
+  - pure mock/fetch service contract
+  - no DOM access
+- `modules/ui-interactive-composite-owner/ui-interactive-composite-owner.module.js`
+  - polling, single-flight, backoff, cancellation, page visibility pause/resume
+  - dependency injection between UI, store, and service
 - `../ui-ico-child/ui-ico-child.js`
   - leaf UI subscribes to the same store
   - emits point-in-time delete intent events
+
+Layout:
+- `components`, `modules`, `services`, and `stores` are sibling folders
+- `module`, `service`, and `store` stay outside the component folder
 
 Flow:
 

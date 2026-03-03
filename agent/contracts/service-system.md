@@ -18,3 +18,10 @@ Boundaries:
 - service owns I/O and data transformation only
 - service does not become a store
 - service does not dispatch UI events for shared state propagation
+
+Filesystem layout:
+- service implementation must live in a dedicated `services/` sibling folder, not inside the component folder
+- preferred path pattern: `services/<owner-name>/<owner-name>.service.js`
+- example sibling layout:
+  - `componentes/ui-board-gallery/ui-board-gallery.js`
+  - `services/ui-board-gallery/ui-board-gallery.service.js`

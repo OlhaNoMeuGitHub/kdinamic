@@ -1,8 +1,8 @@
-import { loadCanonicalAssets } from "../_shared/load-canonical-assets.js";
-import "../ui-ico-child/ui-ico-child.js";
-import { createUiInteractiveCompositeOwnerModule } from "./ui-interactive-composite-owner.module.js";
-import { createUiInteractiveCompositeOwnerService } from "./ui-interactive-composite-owner.service.js";
-import { createUiInteractiveCompositeOwnerStore } from "./ui-interactive-composite-owner.store.js";
+import { loadCanonicalAssets } from "../../../_shared/load-canonical-assets.js";
+import "../../../ui-ico-child/ui-ico-child.js";
+import { createUiInteractiveCompositeOwnerModule } from "../../modules/ui-interactive-composite-owner/ui-interactive-composite-owner.module.js";
+import { createUiInteractiveCompositeOwnerService } from "../../services/ui-interactive-composite-owner/ui-interactive-composite-owner.service.js";
+import { createUiInteractiveCompositeOwnerStore } from "../../stores/ui-interactive-composite-owner/ui-interactive-composite-owner.store.js";
 
 class UiInteractiveCompositeOwner extends HTMLElement {
   constructor() {

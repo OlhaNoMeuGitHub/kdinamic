@@ -29,3 +29,10 @@ Boundaries:
 Lifecycle:
 - subscribe on setup/connection
 - unsubscribe on teardown/disconnection
+
+Filesystem layout:
+- shared store implementation must live in a dedicated `stores/` sibling folder, not inside the component folder
+- preferred path pattern: `stores/<owner-name>/<owner-name>.store.js`
+- example sibling layout:
+  - `componentes/ui-board-gallery/ui-board-gallery.js`
+  - `stores/ui-board-gallery/ui-board-gallery.store.js`

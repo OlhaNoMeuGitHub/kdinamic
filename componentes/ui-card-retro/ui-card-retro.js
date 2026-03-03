@@ -2,7 +2,7 @@ import { loadComponentAssets, loadMaterialsIfNotExists } from "../../utils.js";
 import {
   selectCardById,
   selectColumnById,
-} from "../ui-board-gallery/ui-board-gallery.store.js";
+} from "../../stores/ui-board-gallery/ui-board-gallery.store.js";
 
 class UiCardRetro extends HTMLElement {
   constructor() {
