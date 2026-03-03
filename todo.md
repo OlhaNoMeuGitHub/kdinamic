@@ -49,3 +49,6 @@ Now we need resolve the drag on the card. I belive that we need improve the way 
 
 
 Nice we fixed the drag problem and update the prompt. Now we need dicovery how we can drag a card to another collum.
+
+
+Preciso que o module,service e store sejam em pastas separadas, tanto uma da outra, quanto da pasta componentes. Eles devem ser do mesmo nivel da pasta componente. Por favor tambem atualize os canonicals.

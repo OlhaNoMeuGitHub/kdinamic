@@ -1,23 +1,54 @@
 import { loadComponentAssets, loadMaterialsIfNotExists } from "../../utils.js";
+import {
+  selectCardById,
+  selectColumnById,
+} from "../ui-board-gallery/ui-board-gallery.store.js";
 
 class UiCardRetro extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._initialized = false;
-    this._userColor = null;
-    this._inheritedColor = null;
+    this._columnId = null;
+    this._cardId = null;
+    this._store = null;
+    this._unsubscribeStore = null;
+    this._mode = "view";
+    this._commentPanelOpen = false;
+    this._draftText = "";
+    this._lastRenderedRevision = 0;
   }
 
-  static get observedAttributes() {
-    return ["text"];
+  set columnId(value) {
+    this._columnId = value;
+    this.renderFromStore();
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "text" && oldValue !== newValue) {
-      this.text = newValue ?? "";
-      this.onConnected();
+  get columnId() {
+    return this._columnId;
+  }
+
+  set cardId(value) {
+    this._cardId = value;
+    this.renderFromStore();
+  }
+
+  get cardId() {
+    return this._cardId;
+  }
+
+  set store(value) {
+    if (this._store === value) {
+      return;
     }
+
+    this._unsubscribeStore?.();
+    this._store = value;
+    this.bindStore();
+  }
+
+  get store() {
+    return this._store;
   }
 
   async connectedCallback() {
@@ -25,79 +56,273 @@ class UiCardRetro extends HTMLElement {
       await this.initializeOnce();
       this._initialized = true;
     }
-    this.onConnected();
+
+    this.bindStore();
+    this.renderFromStore();
+  }
+
+  disconnectedCallback() {
+    this._unsubscribeStore?.();
+    this._unsubscribeStore = null;
   }
 
   async initializeOnce() {
-    this.text = this.getAttribute("text") ?? "";
-    this.comments = [];
-    this._userColor = this._userColor ?? null;
-    this._inheritedColor = this._inheritedColor ?? null;
-
     await loadComponentAssets(this, "ui-card-retro");
-
     await loadMaterialsIfNotExists("ui-menu-opcoes-m");
-    await loadMaterialsIfNotExists("ui-text-editable-m");
     await loadMaterialsIfNotExists("ui-like-dislike-m");
     await loadMaterialsIfNotExists("ui-comment-button-m");
 
-    this.cacheElements();
+    this._textarea = this.shadowRoot.querySelector(".ui-card-retro-textarea");
+    this._textDisplay = this.shadowRoot.querySelector(".ui-card-retro-text-display");
+    this._likeMaterial = this.shadowRoot.querySelector("ui-like-dislike-m");
+    this._saveButton = this.shadowRoot.querySelector(".ui-card-retro-save-button");
+    this._menu = this.shadowRoot.querySelector("ui-menu-opcoes-m");
+    this._commentMaterial = this.shadowRoot.querySelector("ui-comment-button-m");
+    this._commentsList = this.shadowRoot.querySelector(".ui-card-retro-comments-list");
+    this._commentTextarea = this.shadowRoot.querySelector(".ui-card-retro-comment-textarea");
+    this._commentSaveButton = this.shadowRoot.querySelector(".ui-card-retro-comment-save-button");
+
     this.attachListenersOnce();
     this.configureMenuOnce();
-    this.setAttribute("data-ui-card-retro-comment-panel", "closed");
-    this.applyEffectiveColor();
-  }
-
-  cacheElements() {
-    this.textarea = this.shadowRoot.querySelector(".ui-card-retro-textarea");
-    this.textDisplay = this.shadowRoot.querySelector(".ui-card-retro-text-display");
-
-    this.likeMaterial = this.shadowRoot.querySelector("ui-like-dislike-m");
-
-    this.saveButton = this.shadowRoot.querySelector(".ui-card-retro-save-button");
-    this.menuOpcoes = this.shadowRoot.querySelector("ui-menu-opcoes-m");
-
-    this.commentMaterial = this.shadowRoot.querySelector("ui-comment-button-m");
-    this.commentsDisplayContainer = this.shadowRoot.querySelector(".ui-card-retro-comments-list");
-
-    this.commentInputContainer = this.shadowRoot.querySelector(".ui-card-retro-comment-input-container");
-    this.commentTextarea = this.commentInputContainer?.querySelector(".ui-card-retro-comment-textarea");
-    this.commentSaveButton = this.commentInputContainer?.querySelector(
-      ".ui-card-retro-comment-save-button"
-    );
+    this.syncUiChrome();
   }
 
   attachListenersOnce() {
-    if (this._listenersInitialized) return;
-    this._listenersInitialized = true;
-
-    if (this.textarea) {
-      this.textarea.addEventListener("input", (event) => this.handleTextareaInput(event));
+    if (this._listenersAttached) {
+      return;
     }
 
-    if (this.saveButton) {
-      this.saveButton.addEventListener("click", () => this.handleSaveButtonClick());
-    }
+    this._listenersAttached = true;
 
-    if (this.commentMaterial) {
-      this.commentMaterial.addEventListener("ui-comment-button-m:click", () =>
-        this.handleCommentButtonClick()
-      );
-    }
+    this._textarea?.addEventListener("input", (event) => {
+      this._draftText = event.target.value;
+    });
 
-    if (this.commentSaveButton) {
-      this.commentSaveButton.addEventListener("click", () =>
-        this.saveCommentFunction(this.commentTextarea)
-      );
-    }
+    this._saveButton?.addEventListener("click", () => {
+      this.emitIntent("ui-card-retro:update", {
+        columnId: this._columnId,
+        cardId: this._cardId,
+        patch: {
+          text: this._draftText,
+        },
+      });
+      this.setMode("view");
+    });
+
+    this._likeMaterial?.addEventListener("ui-like-dislike-m:change", (event) => {
+      this.emitIntent("ui-card-retro:update", {
+        columnId: this._columnId,
+        cardId: this._cardId,
+        patch: {
+          likes: Math.max(0, Number(event.detail?.value ?? 0)),
+        },
+      });
+    });
+
+    this._commentMaterial?.addEventListener("ui-comment-button-m:click", () => {
+      this._commentPanelOpen = !this._commentPanelOpen;
+      this.syncUiChrome();
+      if (this._commentPanelOpen) {
+        this._commentTextarea?.focus();
+      }
+    });
+
+    this._commentSaveButton?.addEventListener("click", () => {
+      const value = `${this._commentTextarea?.value ?? ""}`.trim();
+      if (!value) {
+        return;
+      }
+
+      this.emitIntent("ui-card-retro:add-comment", {
+        columnId: this._columnId,
+        cardId: this._cardId,
+        value,
+      });
+
+      if (this._commentTextarea) {
+        this._commentTextarea.value = "";
+      }
+    });
   }
 
   configureMenuOnce() {
-    this.preenchemenu();
+    if (!this._menu) {
+      return;
+    }
+
+    this._menu.items = [
+      {
+        text: "Editar",
+        action: () => {
+          this.setMode("edit");
+          this._textarea?.focus();
+        },
+      },
+      {
+        text: "Deletar",
+        action: () =>
+          this.emitIntent("ui-card-retro:delete", {
+            columnId: this._columnId,
+            cardId: this._cardId,
+          }),
+      },
+      {
+        text: "Mudar Cor",
+        submenu: [
+          { text: "Usar cor da coluna", action: () => this.updateColor("") },
+          { text: "Lavanda", action: () => this.updateColor("#E6E6FA") },
+          { text: "Salmao", action: () => this.updateColor("#FFDAB9") },
+          { text: "Menta", action: () => this.updateColor("#F5FFFA") },
+          { text: "Ceu Azul", action: () => this.updateColor("#B0E0E6") },
+          { text: "Amarelo Pastel", action: () => this.updateColor("#FFFACD") },
+        ],
+      },
+    ];
   }
 
-  getEffectiveColor() {
-    return this._userColor ?? this._inheritedColor ?? "default";
+  updateColor(color) {
+    this.emitIntent("ui-card-retro:update", {
+      columnId: this._columnId,
+      cardId: this._cardId,
+      patch: {
+        metadata: {
+          color: color ?? "",
+        },
+      },
+    });
+  }
+
+  bindStore() {
+    if (!this.isConnected || !this._initialized || !this._store?.subscribe) {
+      return;
+    }
+
+    this._unsubscribeStore?.();
+    this._unsubscribeStore = this._store.subscribe(() => this.renderFromStore());
+  }
+
+  renderFromStore() {
+    if (!this._initialized) {
+      return;
+    }
+
+    const state = this._store?.getState?.();
+    const column = state ? selectColumnById(state, this._columnId) : null;
+    const card = state ? selectCardById(state, this._columnId, this._cardId) : null;
+    const currentRevision = state?.sync?.revision || 0;
+    const forceSync = currentRevision !== this._lastRenderedRevision;
+
+    if (!card) {
+      if (this._textDisplay) {
+        this._textDisplay.textContent = "Card removido";
+      }
+      if (this._textarea) {
+        this._textarea.value = "";
+      }
+      if (this._commentsList) {
+        this._commentsList.innerHTML = "";
+      }
+      if (this._likeMaterial) {
+        this._likeMaterial.value = 0;
+      }
+      return;
+    }
+
+    if (forceSync) {
+      this._draftText = card.text || "";
+      this._mode = card.text ? "view" : "edit";
+      this._commentPanelOpen = false;
+    } else if (this._mode !== "edit") {
+      this._draftText = card.text || "";
+    }
+
+    if (this._textarea && this._mode !== "edit") {
+      this._textarea.value = card.text || "";
+    } else if (this._textarea && forceSync) {
+      this._textarea.value = this._draftText;
+    }
+
+    if (this._textDisplay) {
+      this._textDisplay.textContent = card.text || "";
+    }
+
+    if (this._likeMaterial) {
+      this._likeMaterial.value = card.likes || 0;
+      this._likeMaterial.allowDislike = true;
+    }
+
+    if (this._commentMaterial) {
+      this._commentMaterial.value = (card.comments || []).length;
+    }
+
+    this.renderComments(card.comments || []);
+    this.applyEffectiveColor(card.metadata?.color || "", column?.metadata?.color || "");
+    this.syncUiChrome();
+    this._lastRenderedRevision = currentRevision;
+  }
+
+  renderComments(comments) {
+    if (!this._commentsList) {
+      return;
+    }
+
+    this._commentsList.innerHTML = "";
+    this._commentsList.hidden = comments.length === 0;
+
+    if (!comments.length) {
+      return;
+    }
+
+    comments.forEach((comment, index) => {
+      const commentElement = document.createElement("div");
+      commentElement.className = "ui-card-retro-comment";
+
+      const commentText = document.createElement("span");
+      commentText.className = "ui-card-retro-comment-text";
+      commentText.textContent = comment;
+
+      const deleteCommentButton = document.createElement("button");
+      deleteCommentButton.className = "ui-card-retro-delete-comment-button";
+      deleteCommentButton.type = "button";
+      deleteCommentButton.textContent = "X";
+      deleteCommentButton.setAttribute("aria-label", "Deletar comentario");
+      deleteCommentButton.addEventListener("click", () => {
+        this.emitIntent("ui-card-retro:delete-comment", {
+          columnId: this._columnId,
+          cardId: this._cardId,
+          commentIndex: index,
+        });
+      });
+
+      commentElement.append(commentText, deleteCommentButton);
+      this._commentsList.appendChild(commentElement);
+    });
+  }
+
+  syncUiChrome() {
+    this.setAttribute("data-ui-card-retro-mode", this._mode);
+    this.setAttribute(
+      "data-ui-card-retro-comment-panel",
+      this._commentPanelOpen ? "open" : "closed"
+    );
+
+    if (this._likeMaterial) {
+      this._likeMaterial.hidden = this._mode !== "view";
+    }
+
+    if (this._commentMaterial) {
+      this._commentMaterial.hidden = this._mode !== "view";
+    }
+  }
+
+  setMode(mode) {
+    this._mode = mode;
+    this.syncUiChrome();
+  }
+
+  applyEffectiveColor(userColor, inheritedColor) {
+    const colorKey = this.getColorKey(userColor || inheritedColor);
+    this.setAttribute("data-ui-card-retro-effective-color", colorKey);
   }
 
   getColorKey(color) {
@@ -112,225 +337,17 @@ class UiCardRetro extends HTMLElement {
     return colorMap[normalizedColor] ?? "default";
   }
 
-  applyEffectiveColor() {
-    const colorKey = this.getEffectiveColor();
-    this.setAttribute("data-ui-card-retro-effective-color", colorKey);
-  }
-
-  setInheritedColor(color) {
-    this._inheritedColor = this.getColorKey(color);
-    this.applyEffectiveColor();
-  }
-
-  clearInheritedColor() {
-    this._inheritedColor = null;
-    this.applyEffectiveColor();
-  }
-
-  setUserColor(color) {
-    this._userColor = this.getColorKey(color);
-    this.applyEffectiveColor();
-  }
-
-  clearUserColor() {
-    this._userColor = null;
-    this.applyEffectiveColor();
-  }
-
-  onConnected() {
-    if (!this._initialized) return;
-
-    if (this.textarea) this.textarea.value = this.text;
-    if (this.textDisplay) this.textDisplay.textContent = this.text;
-
-    if (this.text === "") {
-      this.setTextareaEditable(true);
-    } else {
-      this.setTextareaEditable(false);
-    }
-
-    this.updateCommentCount();
-    this.updateUIState();
-    this.renderComments();
-  }
-
-  handleTextareaInput(event) {
-    this.text = event.target.value;
-  }
-
-  handleSaveButtonClick() {
-    this.setTextareaEditable(false);
-
-    this.updateUIState();
-
+  emitIntent(eventName, detail) {
     this.dispatchEvent(
-      new CustomEvent("save", {
-        detail: { text: this.text },
+      new CustomEvent(eventName, {
         bubbles: true,
         composed: true,
+        detail,
       })
     );
-
-    this.updateTextDisplay();
-  }
-
-  handleCommentButtonClick() {
-    const commentInputContainer = this.shadowRoot.querySelector(".ui-card-retro-comment-input-container");
-    const commentTextarea = commentInputContainer?.querySelector(".ui-card-retro-comment-textarea");
-
-    if (!commentInputContainer) {
-      console.error("Elemento '.ui-card-retro-comment-input-container' nao encontrado.");
-      return;
-    }
-
-    const isOpen = this.getAttribute("data-ui-card-retro-comment-panel") === "open";
-    const shouldOpen = !isOpen;
-
-    if (shouldOpen) {
-      this.setAttribute("data-ui-card-retro-comment-panel", "open");
-      if (commentTextarea) commentTextarea.focus();
-    } else {
-      this.setAttribute("data-ui-card-retro-comment-panel", "closed");
-      return;
-    }
-
-    this.renderComments();
-  }
-
-  saveCommentFunction(commentTextarea) {
-    if (!commentTextarea) return;
-
-    const commentText = commentTextarea.value.trim();
-    if (!commentText) return;
-
-    this.comments.push(commentText);
-    commentTextarea.value = "";
-    this.updateCommentCount();
-    this.renderComments();
-  }
-
-  deleteCommentByIndex(commentIndex) {
-    if (commentIndex < 0 || commentIndex >= this.comments.length) return;
-
-    this.comments.splice(commentIndex, 1);
-    this.updateCommentCount();
-    this.renderComments();
-  }
-
-  renderComments() {
-    if (!this.commentsDisplayContainer) return;
-
-    this.commentsDisplayContainer.innerHTML = "";
-    this.commentsDisplayContainer.hidden = this.comments.length === 0;
-
-    if (this.comments.length === 0) return;
-
-    this.comments.forEach((comment, index) => {
-      const commentElement = document.createElement("div");
-      commentElement.className = "ui-card-retro-comment";
-
-      const commentTextElement = document.createElement("span");
-      commentTextElement.className = "ui-card-retro-comment-text";
-      commentTextElement.textContent = comment;
-
-      const deleteCommentButton = document.createElement("button");
-      deleteCommentButton.className = "ui-card-retro-delete-comment-button";
-      deleteCommentButton.type = "button";
-      deleteCommentButton.textContent = "X";
-      deleteCommentButton.setAttribute("aria-label", "Deletar comentario");
-      deleteCommentButton.addEventListener("click", () => this.deleteCommentByIndex(index));
-
-      commentElement.appendChild(commentTextElement);
-      commentElement.appendChild(deleteCommentButton);
-      this.commentsDisplayContainer.appendChild(commentElement);
-    });
-  }
-
-  updateCommentCount() {
-    if (!this.commentMaterial) return;
-    this.commentMaterial.value = this.comments.length;
-  }
-
-  handleEditOption() {
-    this.setTextareaEditable(true);
-    this.menuOpcoes.classList.remove("visible");
-    this.updateUIState();
-  }
-
-  handleDeleteOption() {
-    this.remove();
-  }
-
-  setTextareaEditable(editable) {
-    this.textarea.disabled = !editable;
-    this.setAttribute("data-ui-card-retro-mode", editable ? "edit" : "view");
-    if (editable) this.setAttribute("data-ui-card-retro-comment-panel", "closed");
-    this.updateUIState();
-  }
-
-  updateTextarea() {
-    if (this.textarea) {
-      this.textarea.value = this.text;
-    }
-  }
-
-  preenchemenu() {
-    const menuOpcoesItems = [
-      {
-        text: "Editar",
-        action: () => this.handleEditOption(),
-      },
-      {
-        text: "Deletar",
-        action: () => this.handleDeleteOption(),
-      },
-      {
-        text: "Mudar Cor",
-        submenu: [
-          { text: "Usar cor da coluna", action: () => this.clearUserColor() },
-          { text: "Lavanda", action: () => this.changeCardBackground("#E6E6FA") },
-          { text: "Salm\u00e3o", action: () => this.changeCardBackground("#FFDAB9") },
-          { text: "Menta", action: () => this.changeCardBackground("#F5FFFA") },
-          { text: "C\u00e9u Azul", action: () => this.changeCardBackground("#B0E0E6") },
-          { text: "Amarelo Pastel", action: () => this.changeCardBackground("#FFFACD") },
-        ],
-      },
-    ];
-
-    this.menuOpcoes.items = menuOpcoesItems;
-  }
-
-  updateUIState() {
-    if (this.textarea.disabled) {
-      this.applyEffectiveColor();
-
-      if (this.likeMaterial) {
-        this.likeMaterial.hidden = false;
-        this.likeMaterial.allowDislike = true;
-      }
-
-      if (this.commentMaterial) this.commentMaterial.hidden = false;
-
-      this.menuOpcoes.classList.add("visible");
-      return;
-    }
-
-    if (this.likeMaterial) {
-      this.likeMaterial.hidden = true;
-      this.likeMaterial.allowDislike = false;
-    }
-
-    if (this.commentMaterial) this.commentMaterial.hidden = true;
-    this.menuOpcoes.classList.remove("visible");
-  }
-
-  updateTextDisplay() {
-    this.textDisplay.textContent = this.text;
-  }
-
-  changeCardBackground(color) {
-    this.setUserColor(color);
   }
 }
 
-customElements.define("ui-card-retro", UiCardRetro);
+if (!customElements.get("ui-card-retro")) {
+  customElements.define("ui-card-retro", UiCardRetro);
+}

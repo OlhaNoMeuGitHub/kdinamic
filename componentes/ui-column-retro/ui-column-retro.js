@@ -3,12 +3,42 @@ import {
   loadComponentIfNotExists,
   loadMaterialsIfNotExists,
 } from "../../utils.js";
+import { selectColumnById } from "../ui-board-gallery/ui-board-gallery.store.js";
 
 class UiColumnRetro extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._initialized = false;
+    this._columnId = null;
+    this._store = null;
+    this._unsubscribeStore = null;
+    this._cardShellById = new Map();
+    this._lastRenderedRevision = 0;
+    this._isEditingTitle = false;
+  }
+
+  set columnId(value) {
+    this._columnId = value;
+    this.renderFromStore();
+  }
+
+  get columnId() {
+    return this._columnId;
+  }
+
+  set store(value) {
+    if (this._store === value) {
+      return;
+    }
+
+    this._unsubscribeStore?.();
+    this._store = value;
+    this.bindStore();
+  }
+
+  get store() {
+    return this._store;
   }
 
   async connectedCallback() {
@@ -16,7 +46,14 @@ class UiColumnRetro extends HTMLElement {
       await this.initializeOnce();
       this._initialized = true;
     }
-    this.onConnected();
+
+    this.bindStore();
+    this.renderFromStore();
+  }
+
+  disconnectedCallback() {
+    this._unsubscribeStore?.();
+    this._unsubscribeStore = null;
   }
 
   async initializeOnce() {
@@ -24,221 +61,259 @@ class UiColumnRetro extends HTMLElement {
     await loadComponentIfNotExists("ui-card-retro");
     await loadMaterialsIfNotExists("ui-menu-opcoes-m");
 
-    // Internal state (once)
-    this._titleText = "";
-    this._isEditingTitle = false;
-    this._cardsColor = null;
-
-    // Cache DOM refs
     this._titleEl = this.shadowRoot.querySelector("#ui-column-retro-title");
     this._btnCreateCard = this.shadowRoot.querySelector("#ui-column-retro-create-card");
     this._cardsContainer = this.shadowRoot.querySelector("#ui-column-retro-cards");
-    this.addEventListener("ui-column-delete", (e) => {
-    
-      const columnEl = e.detail?.column;
-      if (!columnEl) return;
-    
-      const shell = columnEl.closest(".ui-board-gallery-column-shell");
-      if (shell) shell.remove();
-    });
-
-    // Menu material ref (once)
     this._menu = this.shadowRoot.querySelector(".ui-column-retro-menu");
 
-    // Listeners ONCE
-    if (this._btnCreateCard) {
-      this._btnCreateCard.addEventListener("click", () => this.handleCreateCardClick());
-    }
-
-    if (this._titleEl) {
-      this._titleEl.addEventListener("click", () => this.handleTitleClick());
-    }
-
-    // Configure material actions (component-owned)
+    this.attachListenersOnce();
     this.configureMenuActions();
-
-    this.updateTitle();
   }
 
-  onConnected() {
-    this.updateTitle();
+  attachListenersOnce() {
+    if (this._listenersAttached) {
+      return;
+    }
+
+    this._listenersAttached = true;
+
+    this._btnCreateCard?.addEventListener("click", () => {
+      this.emitIntent("ui-column-retro:create-card", {
+        columnId: this._columnId,
+      });
+    });
+
+    this._titleEl?.addEventListener("click", () => this.startTitleEdit());
   }
 
-  // ---------------------------
-  // Menu (ui-menu-opcoes-m)
-  // ---------------------------
   configureMenuActions() {
-    if (!this._menu) return;
-  
+    if (!this._menu) {
+      return;
+    }
+
     this._menu.items = [
       {
         text: "Delete column",
-        action: () => this.handleDeleteClick(),
+        action: () =>
+          this.emitIntent("ui-column-retro:delete", {
+            columnId: this._columnId,
+          }),
       },
       {
         text: "Mudar Cor",
         submenu: [
-          { text: "Lavanda", action: () => this.handleChangeColorClick("#E6E6FA") },
-          { text: "Salmão", action: () => this.handleChangeColorClick("#FFDAB9") },
-          { text: "Menta", action: () => this.handleChangeColorClick("#F5FFFA") },
-          { text: "Céu Azul", action: () => this.handleChangeColorClick("#B0E0E6") },
-          { text: "Amarelo Pastel", action: () => this.handleChangeColorClick("#FFFACD") },
+          { text: "Limpar", action: () => this.updateColumnColor("") },
+          { text: "Lavanda", action: () => this.updateColumnColor("#E6E6FA") },
+          { text: "Salmao", action: () => this.updateColumnColor("#FFDAB9") },
+          { text: "Menta", action: () => this.updateColumnColor("#F5FFFA") },
+          { text: "Ceu Azul", action: () => this.updateColumnColor("#B0E0E6") },
+          { text: "Amarelo Pastel", action: () => this.updateColumnColor("#FFFACD") },
         ],
       },
     ];
   }
-  
 
-  handleDeleteClick() {
-    // ✅ Child emits intent. Parent removes shell.
-    this.dispatchEvent(
-      new CustomEvent("ui-column-delete", {
-        bubbles: true,
-        composed: true,
-        detail: { column: this },
-      })
-    );
-  }
-
-  handleChangeColorClick(color) {
-    if (!color) return;
-  
-    this._cardsColor = color;
-    this.applyInheritedColorToCards(color);
-  
-    this.dispatchEvent(
-      new CustomEvent("ui-column-change-color", {
-        bubbles: true,
-        composed: true,
-        detail: { column: this, color },
-      })
-    );
-    
-  }
-  
-  setCardsInheritedColor(color) {
-    this._cardsColor = color ?? null;
-  
-    const shells = this._cardsContainer?.querySelectorAll(".ui-column-retro-card-wrapper") ?? [];
-    shells.forEach((shell) => {
-      const card = shell.querySelector("ui-card-retro");
-      if (card && typeof card.setInheritedColor === "function") {
-        card.setInheritedColor(this._cardsColor);
-      }
+  updateColumnColor(color) {
+    this.emitIntent("ui-column-retro:update", {
+      columnId: this._columnId,
+      patch: {
+        metadata: {
+          color: color ?? "",
+        },
+      },
     });
   }
 
-  applyInheritedColorToCards(color) {
-    if (!this._cardsContainer) return;
-  
-    const cards = this._cardsContainer.querySelectorAll("ui-card-retro");
-    cards.forEach((card) => this.applyColorToCard(card, color));
-  }
-  
-  
-  applyColorToCard(cardEl, color) {
-    if (!cardEl || !color) return;
-  
-    // Choose ONE stable public API in UiCardRetro:
-    // Option A: method
-    if (typeof cardEl.setInheritedColor === "function") {
-      cardEl.setInheritedColor(color);
+  bindStore() {
+    if (!this.isConnected || !this._initialized || !this._store?.subscribe) {
       return;
     }
-  
-    // Option B: attribute
-    cardEl.setAttribute("inherited-color", color);
-  }
-  // ---------------------------
-  // Public API (property)
-  // ---------------------------
-  set columnTitle(value) {
-    this._titleText = `${value ?? ""}`;
-    this.updateTitle();
+
+    this._unsubscribeStore?.();
+    this._unsubscribeStore = this._store.subscribe(() => this.renderFromStore());
   }
 
-  get columnTitle() {
-    return this._titleText;
-  }
-
-  updateTitle() {
-    if (this._titleEl) {
-      this._titleEl.textContent = this._titleText || "Nova Coluna";
+  renderFromStore() {
+    if (!this._initialized) {
+      return;
     }
+
+    const state = this._store?.getState?.();
+    const column = state ? selectColumnById(state, this._columnId) : null;
+    this._lastRenderedRevision = state?.sync?.revision || 0;
+
+    if (!column) {
+      if (this._titleEl) {
+        this._titleEl.textContent = "Coluna removida";
+      }
+      if (this._cardsContainer) {
+        this._cardsContainer.innerHTML = "";
+      }
+      return;
+    }
+
+    if (this._titleEl && !this._isEditingTitle) {
+      this._titleEl.textContent = column.text || "Nova Coluna";
+      this._titleEl.title = column.id || "";
+    }
+
+    this.syncCards(column.cards || []);
   }
 
-  // ---------------------------
-  // Cards (create shell)
-  // ---------------------------
-  handleCreateCardClick() {
-    if (!this._cardsContainer) return;
+  syncCards(cards) {
+    if (!this._cardsContainer) {
+      return;
+    }
 
-    // Shell (draggable unit) — drag orchestration is owned by the GALLERY
+    const desiredIds = new Set(cards.map((card) => card.id));
+
+    for (const [cardId, shell] of this._cardShellById.entries()) {
+      if (!desiredIds.has(cardId)) {
+        shell.remove();
+        this._cardShellById.delete(cardId);
+      }
+    }
+
+    cards.forEach((card) => {
+      let shell = this._cardShellById.get(card.id);
+      if (!shell) {
+        shell = this.createCardShell(card.id);
+        this._cardShellById.set(card.id, shell);
+      }
+
+      shell.dataset.cardId = card.id;
+      shell.dataset.columnId = this._columnId || "";
+
+      const cardElement = shell.querySelector("ui-card-retro");
+      if (cardElement) {
+        cardElement.store = this._store;
+        cardElement.columnId = this._columnId;
+        cardElement.cardId = card.id;
+      }
+
+      this._cardsContainer.appendChild(shell);
+    });
+  }
+
+  createCardShell(cardId) {
     const shell = document.createElement("div");
     shell.className = "ui-column-retro-card-wrapper";
+    shell.dataset.cardId = cardId;
+    shell.dataset.columnId = this._columnId || "";
     shell.setAttribute("draggable", "true");
 
     const card = document.createElement("ui-card-retro");
-    if (typeof card.setInheritedColor === "function") {
-      card.setInheritedColor(this._cardsColor);
-      
-    }
+    card.store = this._store;
+    card.columnId = this._columnId;
+    card.cardId = cardId;
+
     shell.appendChild(card);
-
-    this._cardsContainer.appendChild(shell);
+    return shell;
   }
 
-  // ---------------------------
-  // Minimal public API for Gallery
-  // ---------------------------
-  getDropZone() {
-    return this._cardsContainer;
-  }
+  startTitleEdit() {
+    if (this._isEditingTitle || !this._titleEl) {
+      return;
+    }
 
-  // ---------------------------
-  // Title editing
-  // ---------------------------
-  handleTitleClick() {
-    if (this._isEditingTitle) return;
     this._isEditingTitle = true;
 
-    const current = this._titleText || "Nova Coluna";
-
+    const currentTitle = this._titleEl.textContent || "Nova Coluna";
     const input = document.createElement("input");
     input.type = "text";
-    input.value = current;
+    input.value = currentTitle;
     input.className = "ui-column-retro-title-input";
 
-    if (this._titleEl) this._titleEl.replaceWith(input);
+    this._titleEl.replaceWith(input);
     input.focus();
 
     const restoreTitle = (text) => {
-      const h2 = document.createElement("h2");
-      h2.id = "ui-column-retro-title";
-      h2.className = "ui-column-retro-title";
-      h2.textContent = text;
+      const title = document.createElement("h2");
+      title.id = "ui-column-retro-title";
+      title.className = "ui-column-retro-title";
+      title.textContent = text;
+      title.title = this._columnId || "";
+      title.addEventListener("click", () => this.startTitleEdit());
 
-      input.replaceWith(h2);
-      this._titleEl = h2;
-
-      // Re-attach listener to the new element
-      this._titleEl.addEventListener("click", () => this.handleTitleClick());
-
+      input.replaceWith(title);
+      this._titleEl = title;
       this._isEditingTitle = false;
     };
 
     const commit = () => {
-      const newTitle = input.value.trim() || "Nova Coluna";
-      this._titleText = newTitle;
-      restoreTitle(newTitle);
+      const nextText = `${input.value ?? ""}`.trim() || currentTitle;
+      this.emitIntent("ui-column-retro:update", {
+        columnId: this._columnId,
+        patch: {
+          text: nextText,
+        },
+      });
+      restoreTitle(nextText);
     };
 
     input.addEventListener("blur", commit);
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") commit();
-      if (e.key === "Escape") restoreTitle(current);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        commit();
+      }
+
+      if (event.key === "Escape") {
+        restoreTitle(currentTitle);
+      }
     });
+  }
+
+  getDropZone() {
+    return this._cardsContainer;
+  }
+
+  getCardShellFromEvent(event) {
+    return this.findInComposedPath(event, (element) =>
+      element?.classList?.contains("ui-column-retro-card-wrapper")
+    );
+  }
+
+  getCardDragAfter(y, excludedShell = null) {
+    const cards = [...(this._cardsContainer?.querySelectorAll(".ui-column-retro-card-wrapper") ?? [])].filter(
+      (shell) => shell !== excludedShell
+    );
+
+    return cards.reduce(
+      (closest, shell) => {
+        const box = shell.getBoundingClientRect();
+        const offset = y - (box.top + box.height / 2);
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: shell };
+        }
+
+        return closest;
+      },
+      { offset: Number.NEGATIVE_INFINITY, element: null }
+    ).element;
+  }
+
+  emitIntent(eventName, detail) {
+    this.dispatchEvent(
+      new CustomEvent(eventName, {
+        bubbles: true,
+        composed: true,
+        detail,
+      })
+    );
+  }
+
+  findInComposedPath(event, predicate) {
+    const path = event.composedPath?.() || [];
+    for (const element of path) {
+      if (predicate(element)) {
+        return element;
+      }
+    }
+
+    return null;
   }
 }
 
-customElements.define("ui-column-retro", UiColumnRetro);
+if (!customElements.get("ui-column-retro")) {
+  customElements.define("ui-column-retro", UiColumnRetro);
+}
